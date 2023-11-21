@@ -4,3 +4,5 @@ op-implementation-c/build
 op-implementation-c/prog
 tp1
 tp2
+tp5/build
+tp5/lib/Random
