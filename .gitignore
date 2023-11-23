@@ -6,3 +6,5 @@ tp1
 tp2
 tp5/build
 tp5/lib/Random
+tp5/.cache/clangd/index
+tp5/src/compile_commands.json
