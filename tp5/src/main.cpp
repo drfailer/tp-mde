@@ -44,7 +44,7 @@ double computPi(CLHEP::HepRandomEngine &generator, int numberOfDraw) {
         double x = generator.flat();
         double y = generator.flat();
 
-        if (x*x + y*y < 1) {
+        if (x * x + y * y < 1) {
             ++nbValidDraw;
         }
     }
@@ -52,7 +52,7 @@ double computPi(CLHEP::HepRandomEngine &generator, int numberOfDraw) {
 }
 
 /******************************************************************************/
-/*                                 questions                                  */
+/*                                 question 2                                 */
 /******************************************************************************/
 
 /**
@@ -86,6 +86,10 @@ void question2() {
     }
 }
 
+/******************************************************************************/
+/*                                 question 3                                 */
+/******************************************************************************/
+
 /**
  * @brief  Archive de fichiers statut avec MT.
  */
@@ -101,6 +105,10 @@ void question3(size_t nbStatusFiles = 10, size_t separarationNb = 2'000'000'000,
         }
     }
 }
+
+/******************************************************************************/
+/*                                 question 4                                 */
+/******************************************************************************/
 
 /**
  * @brief  Réplication du calcule de pi selon la méthode de Monte-Carlo. On
@@ -122,6 +130,10 @@ void question4(size_t nbReplications = 10, size_t nbDraws = 1'000'000'000,
     std::cout << std::setprecision(10) << "pi: " << sumPI / nbReplications
               << "; time: " << timerCountMs() << std::endl;
 }
+
+/******************************************************************************/
+/*                                 question 5                                 */
+/******************************************************************************/
 
 /**
  * @brief  Réalisation d'une réplication du calcule de pi avec initialisation de
@@ -145,6 +157,10 @@ void question5(const std::string &fileName = "mt3_",
                   << "); time: " << timerCountMs() << "ms" << std::endl;
     }
 }
+
+/******************************************************************************/
+/*                                question 6a                                 */
+/******************************************************************************/
 
 /**
  * @brief  Paraléllisation du calcule éffectué par question5 en utilisant
@@ -197,6 +213,63 @@ void question6aThreads(const std::string &fileName = "mt3_",
 }
 
 /******************************************************************************/
+/*                                question 6b                                 */
+/******************************************************************************/
+
+std::string generateWord(CLHEP::HepRandomEngine &generator, int nbLetters = 7) {
+    std::string output = "";
+
+    for (int i = 0; i < nbLetters; ++i) {
+        output.push_back('A' + generator.flat() * 26);
+    }
+    return output;
+}
+
+long G_CountIter = 0;
+bool G_run = true;
+
+void generateNWords(const std::string& fileName, int nbWords) {
+    std::string lasGeneratedWord = "";
+    CLHEP::MTwistEngine mt;
+    long tmpCounter = 0;
+    long localCounter = 0;
+
+    mt.restoreStatus(fileName.c_str());
+    while (G_run && lasGeneratedWord != "GATTACA" && localCounter < nbWords) {
+        lasGeneratedWord = generateWord(mt);
+        mutex.lock();
+        tmpCounter = ++G_CountIter;
+        localCounter++;
+        if (localCounter % 1'000'000 == 0) {
+            std::cout << "countIter = " << tmpCounter
+                << ", word: " << lasGeneratedWord << std::endl;
+        }
+        mutex.unlock();
+    }
+
+    if (lasGeneratedWord == "GATTACA") {
+        mutex.lock();
+        std::cout << "GATTACA has been found, countIter = " << tmpCounter
+                  << std::endl;
+        G_run = false;
+        mutex.unlock();
+    }
+}
+
+void gattaca() {
+    /* config **************************************/
+    constexpr long MAX_ITER = 5'000'000'000;
+    constexpr int NB_THREADS = 10;
+    /***********************************************/
+    std::future<void> threads[NB_THREADS];
+
+    for (int i = 0; i < NB_THREADS; ++i) {
+        threads[i] = std::async(std::launch::async, generateNWords,
+                cat("mt3_", i), MAX_ITER / NB_THREADS);
+    }
+}
+
+/******************************************************************************/
 /*                                    main                                    */
 /******************************************************************************/
 
@@ -204,13 +277,18 @@ int main(int argc, char **argv) {
     std::cout << std::setprecision(10);
     if (argc == 2) {
         if (std::string(argv[1]) == "threads") {
+            std::cout << "pi calculus with threads:" << std::endl;
             // on peut essayer les deux version mais elle font la même chose
             /* question6aThreads(); */
             question6aFuture();
+        } else if (std::string(argv[1]) == "gattaca") {
+            std::cout << "gattaca generation:" << std::endl;
+            gattaca();
         } else {
             question5(argv[1]);
         }
     } else {
+        std::cout << "questions 2, 3 and 4 (generate files)" << std::endl;
         // par défaut on lance les fonctions qui génèrent les fichiers
         question2();
         question3();
