@@ -36,10 +36,6 @@ std::string cat(const std::string &str, int i) {
 
 /**
  * @brief  Calucule de pi en utilisant la méthode de Monte-Carlo.
- * @param  generator  PRNG
- * @param  numberOfDraw  Nombre de nombres pseudo-aléatoires tirés pour réaliser
- *                       le calcule.
- * @return  Valeur approchée de pi.
  */
 double computPi(CLHEP::HepRandomEngine &generator, int numberOfDraw) {
     long nbValidDraw = 0;
@@ -48,7 +44,7 @@ double computPi(CLHEP::HepRandomEngine &generator, int numberOfDraw) {
         double x = generator.flat();
         double y = generator.flat();
 
-        if (x * x + y * y < 1) {
+        if (x*x + y*y < 1) {
             ++nbValidDraw;
         }
     }
@@ -70,13 +66,13 @@ void question2() {
     constexpr size_t SEPARATION_NB = 10;
     /***********************************************/
     CLHEP::MTwistEngine mt;
-    double randoms[NB_STATUS_FILE][SEPARATION_NB];
+    double savedRandoms[NB_STATUS_FILE][SEPARATION_NB];
 
     // sauvegarde de statut et de tirages
     for (size_t i = 0; i < NB_STATUS_FILE; ++i) {
         mt.saveStatus(cat("mt2_", i).c_str());
         for (size_t j = 0; j < SEPARATION_NB; ++j) {
-            randoms[i][j] = mt.flat();
+            savedRandoms[i][j] = mt.flat();
         }
     }
     // test si on retrouve bien les tirages
@@ -85,7 +81,7 @@ void question2() {
         for (size_t j = 0; j < SEPARATION_NB; ++j) {
             // le assert fait planter le programme si le générateur ne génère
             // pas une séquence reproductible
-            assert(randoms[i][j] == mt.flat());
+            assert(savedRandoms[i][j] == mt.flat());
         }
     }
 }
@@ -146,7 +142,7 @@ void question5(const std::string &fileName = "mt3_",
     /* mutex lock on std::cout */ {
         std::unique_lock<std::mutex> lock(mutex);
         std::cout << "pi: " << pi << " (with " << fileName
-            << "); time: " << timerCountMs() << "ms" << std::endl;
+                  << "); time: " << timerCountMs() << "ms" << std::endl;
     }
 }
 
@@ -169,7 +165,7 @@ void question6aFuture(const std::string &fileName = "mt3_",
             pis[i] = std::async(std::launch::async, question5, cat(fileName, i),
                                 nb_draws);
         }
-    } // on attent la fin des threads pour sortir
+    }
     timerEnd();
     std::cout << "total time: " << timerCountMs() / 1000.0 << "s" << std::endl;
 }
@@ -191,10 +187,12 @@ void question6aThreads(const std::string &fileName = "mt3_",
     for (i = 0; i < NB_REPLICATION; ++i) {
         thread[i] = std::thread(question5, cat(fileName, i), nb_draws);
     }
+
     for (i = 0; i < NB_REPLICATION; ++i) {
         thread[i].join();
     }
     timerEnd();
+
     std::cout << "total time: " << timerCountMs() / 1000.0 << "s" << std::endl;
 }
 
