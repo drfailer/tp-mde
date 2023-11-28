@@ -203,13 +203,18 @@ void question6aThreads(const std::string &fileName = "mt3_",
 int main(int argc, char **argv) {
     std::cout << std::setprecision(10);
     if (argc == 2) {
-        question5(argv[1]);
+        if (std::string(argv[1]) == "threads") {
+            // on peut essayer les deux version mais elle font la même chose
+            /* question6aThreads(); */
+            question6aFuture();
+        } else {
+            question5(argv[1]);
+        }
     } else {
-        /* question2(); */
-        /* question3(); */
-        /* question4(); */
-        /* question6aFuture(); */
-        question6aThreads();
+        // par défaut on lance les fonctions qui génèrent les fichiers
+        question2();
+        question3();
+        question4();
     }
 
     return 0;
