@@ -9,3 +9,5 @@ tp5/lib/Random
 tp5/.cache/clangd/index
 tp5/src/compile_commands.json
 tp5/out
+tp5/lib/CLHEP-build
+generic-implementation-c/.gdb_history

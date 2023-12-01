@@ -1,0 +1,3 @@
+[submodule "tp5/lib/CLHEP"]
+	path = tp5/lib/CLHEP
+	url = https://gitlab.cern.ch/CLHEP/CLHEP.git
