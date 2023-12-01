@@ -11,18 +11,18 @@
 /**
  * Calucule de pi en utilisant la méthode de Monte-Carlo.
  */
-double computPi(CLHEP::HepRandomEngine &generator, int numberOfDraw) {
-    long nbValidDraw = 0;
+double computePi(CLHEP::HepRandomEngine &generator, int nbDraw) {
+    long nbValidPoints = 0;
 
-    for (int i = 0; i < numberOfDraw; ++i) {
+    for (int i = 0; i < nbDraw; ++i) {
         double x = generator.flat();
         double y = generator.flat();
 
         if (x * x + y * y < 1) {
-            ++nbValidDraw;
+            ++nbValidPoints;
         }
     }
-    return 4 * (double)nbValidDraw / numberOfDraw;
+    return 4 * (double)nbValidPoints / nbDraw;
 }
 
 /******************************************************************************/
@@ -41,7 +41,7 @@ void question4(size_t nbReplications, size_t nbDraws,
     timerStart();
     for (size_t i = 0; i < nbReplications; ++i) {
         mt.restoreStatus(cat(fileName, i).c_str());
-        sumPI += computPi(mt, nbDraws);
+        sumPI += computePi(mt, nbDraws);
     }
     timerEnd();
 
@@ -64,7 +64,7 @@ void question5(const std::string &fileName, size_t nb_draws) {
 
     timerStart();
     mt.restoreStatus(fileName.c_str());
-    pi = computPi(mt, nb_draws);
+    pi = computePi(mt, nb_draws);
     timerEnd();
 
     /* mutex lock on std::cout */ {
@@ -83,7 +83,7 @@ constexpr size_t NB_REPLICATION = 10;
 /**
  * Paraléllisation du calcule éffectué par question5 en utilisant std::future.
  */
-void question6aFuture(const std::string &fileName, size_t nb_draws) {
+void question6aFuture(const std::string &fileName, size_t nbDraws) {
     CLHEP::MTwistEngine mt;
     size_t i;
 
@@ -92,7 +92,7 @@ void question6aFuture(const std::string &fileName, size_t nb_draws) {
         std::future<void> pis[NB_REPLICATION];
         for (i = 0; i < NB_REPLICATION; ++i) {
             pis[i] = std::async(std::launch::async, question5, cat(fileName, i),
-                                nb_draws);
+                                nbDraws);
         }
     }
     timerEnd();
@@ -102,7 +102,7 @@ void question6aFuture(const std::string &fileName, size_t nb_draws) {
 /**
  * Paraléllisation du calcule éffectué par question5 en utilisant std::thread.
  */
-void question6aThreads(const std::string &fileName, size_t nb_draws) {
+void question6aThreads(const std::string &fileName, size_t nbDraws) {
     /* config **************************************/
     constexpr size_t NB_REPLICATION = 10;
     /***********************************************/
@@ -112,7 +112,7 @@ void question6aThreads(const std::string &fileName, size_t nb_draws) {
 
     timerStart();
     for (i = 0; i < NB_REPLICATION; ++i) {
-        thread[i] = std::thread(question5, cat(fileName, i), nb_draws);
+        thread[i] = std::thread(question5, cat(fileName, i), nbDraws);
     }
 
     for (i = 0; i < NB_REPLICATION; ++i) {
