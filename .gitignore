@@ -13,3 +13,7 @@ tp5/lib/CLHEP-build
 generic-implementation-c/.gdb_history
 tp5/lib/CLHEP-lib
 tp5/src/.cache/clangd/index
+tp5/rapport/_minted-rapport
+tp5/rapport/rapport.aux
+tp5/rapport/rapport.log
+tp5/rapport/rapport.toc
