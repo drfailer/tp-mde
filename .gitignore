@@ -11,3 +11,5 @@ tp5/src/compile_commands.json
 tp5/out
 tp5/lib/CLHEP-build
 generic-implementation-c/.gdb_history
+tp5/lib/CLHEP-lib
+tp5/src/.cache/clangd/index

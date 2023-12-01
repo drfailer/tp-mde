@@ -1,7 +1,6 @@
 #include <assert.h>
 #include <bits/chrono.h>
 #include <chrono>
-#include <cmath>
 #include <cstddef>
 #include <future>
 #include <iomanip>
@@ -216,6 +215,9 @@ void question6aThreads(const std::string &fileName = "mt3_",
 /*                                question 6b                                 */
 /******************************************************************************/
 
+/**
+ * Génère un mot de `nbLetters` en utilisant le PRNG donné en paramètre.
+ */
 std::string generateWord(CLHEP::HepRandomEngine &generator, int nbLetters = 7) {
     std::string output = "";
 
@@ -228,6 +230,11 @@ std::string generateWord(CLHEP::HepRandomEngine &generator, int nbLetters = 7) {
 long G_CountIter = 0;
 bool G_run = true;
 
+/**
+ * Génère `nbWords` mots de 7 lettre et s'arrête quand le mote GATTACA est
+ * trouvé. Le générateur est initialisé avec le fichier de status `fileName`.
+ * Cette fonction est fait pour être parallélisée.
+ */
 void generateNWords(const std::string& fileName, int nbWords) {
     std::string lasGeneratedWord = "";
     CLHEP::MTwistEngine mt;
@@ -256,17 +263,26 @@ void generateNWords(const std::string& fileName, int nbWords) {
     }
 }
 
-void gattaca() {
-    /* config **************************************/
-    constexpr long MAX_ITER = 5'000'000'000;
-    constexpr int NB_THREADS = 10;
-    /***********************************************/
-    std::future<void> threads[NB_THREADS];
+/**
+ * Génère des mots de 7 lettres jusqu'à ce que le mot GATTACA soit trouvé. La
+ * génération des mots se fait sur plusieurs threads pour aller plus vite.
+ *
+ * Par défaut, on réutilise les fichiers générés à la question 3:
+ * - 10 fichiers => 10 threads.
+ * - fichiers sépararés de 2 milliards de tirages => 2 milliards d'itération par
+ *   thread.
+ *
+ * On peut configurer la fonction si besoin.
+ */
+void gattaca(long maxIter = 20'000'000'000, int nbThreads = 10, std::string
+        fileName = "mt3_") {
+    std::future<void> *threads = new std::future<void>[nbThreads];
 
-    for (int i = 0; i < NB_THREADS; ++i) {
+    for (int i = 0; i < nbThreads; ++i) {
         threads[i] = std::async(std::launch::async, generateNWords,
-                cat("mt3_", i), MAX_ITER / NB_THREADS);
+                cat(fileName, i), maxIter / nbThreads);
     }
+    delete[] threads;
 }
 
 /******************************************************************************/
@@ -275,15 +291,22 @@ void gattaca() {
 
 int main(int argc, char **argv) {
     std::cout << std::setprecision(10);
-    if (argc == 2) {
+    if (argc >= 2) {
         if (std::string(argv[1]) == "threads") {
             std::cout << "pi calculus with threads:" << std::endl;
             // on peut essayer les deux version mais elle font la même chose
             /* question6aThreads(); */
             question6aFuture();
         } else if (std::string(argv[1]) == "gattaca") {
-            std::cout << "gattaca generation:" << std::endl;
-            gattaca();
+            if (argc >= 3 && std::string(argv[2]) == "gen") {
+                // on peut généré les fichiers de status si on souhaite une
+                // autre configuration que celle de la question 3
+                std::cout << "gattaca status generation:" << std::endl;
+                question3(10, 1'000'000'000, "gattaca_");
+            } else {
+                std::cout << "gattaca generation:" << std::endl;
+                gattaca();
+            }
         } else {
             question5(argv[1]);
         }
