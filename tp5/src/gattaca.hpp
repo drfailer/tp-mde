@@ -2,7 +2,7 @@
 #define GATTACA_HPP
 #include <CLHEP/Random/MTwistEngine.h>
 
-void gattaca(long maxIter = 20'000'000'000, int nbThreads = 10, std::string
+void gattaca(int nbThreads = 10, long maxIterPerThread = 1'000'000'000, std::string
         fileName = "mt3_");
 
 #endif

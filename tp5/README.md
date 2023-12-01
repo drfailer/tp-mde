@@ -34,9 +34,8 @@ make
 ./tp5 pi par # calcul de pi en parallèle (question 6a)
 
 # gattaca
-./tp5 gattaca gen # génération des fichiers de status pour gattaca (optionel, ne
-                  # sert que s'il on a modifier la configuration du programme).
-./tp5 gattaca # génération du mot gattaca
+./tp5 gattaca gen # génération des fichiers de status pour gattaca.
+./tp5 gattaca # génération de la séquence gattaca
 ```
 
 ### Script `compute_pi.sh`

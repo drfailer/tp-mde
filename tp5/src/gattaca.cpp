@@ -1,58 +1,68 @@
 #include "gattaca.hpp"
-#include <iostream>
-#include <future>
 #include "utils.hpp"
+#include <future>
+#include <iostream>
+#include <mutex>
 
 /******************************************************************************/
-/*                              word generation                               */
+/*                            sequence generation                             */
 /******************************************************************************/
 
 /**
- * Génère un mot de `nbLetters` en utilisant le PRNG donné en paramètre.
+ * Génère un mot de `nbNucleicBase` en utilisant le PRNG donné en paramètre.
  */
-std::string generateWord(CLHEP::HepRandomEngine &generator, int nbLetters = 7) {
+std::string generateSequence(CLHEP::HepRandomEngine &generator,
+                             int nbNucleicBase) {
     std::string output = "";
 
-    for (int i = 0; i < nbLetters; ++i) {
-        output.push_back('A' + generator.flat() * 26);
+    for (int i = 0; i < nbNucleicBase; ++i) {
+        switch (int(generator.flat() * 4)) {
+        case 0:
+            output.push_back('A');
+            break;
+        case 1:
+            output.push_back('C');
+            break;
+        case 2:
+            output.push_back('G');
+            break;
+        case 3:
+            output.push_back('T');
+            break;
+        }
     }
     return output;
 }
 
-long G_CountIter = 0;
-bool G_run = true;
-
 /**
- * Génère `nbWords` mots de 7 lettre et s'arrête quand le mote GATTACA est
- * trouvé. Le générateur est initialisé avec le fichier de status `fileName`.
- * Cette fonction est fait pour être parallélisée.
+ * Génère `nbSequences` séquences et s'arrête quand la séquence
+ * `objectiveSequence` est trouvée. Le générateur est initialisé avec le fichier
+ * de status `fileName`. Cette fonction est faite pour être parallélisée.
  */
-void generateNWords(const std::string& fileName, int nbWords) {
-    std::string lasGeneratedWord = "";
+int generateNSequences(const std::string &fileName, int nbSequences,
+                        std::string objectiveSequence) {
+    std::string lastGeneratedSequence = "";
     CLHEP::MTwistEngine mt;
-    long tmpCounter = 0;
-    long localCounter = 0;
+    long counter = 0;
 
     mt.restoreStatus(fileName.c_str());
-    while (G_run && lasGeneratedWord != "GATTACA" && localCounter < nbWords) {
-        lasGeneratedWord = generateWord(mt);
-        mutex.lock();
-        tmpCounter = ++G_CountIter;
-        localCounter++;
-        if (localCounter % 1'000'000 == 0) {
-            std::cout << "countIter = " << tmpCounter
-                << ", word: " << lasGeneratedWord << std::endl;
+    while (lastGeneratedSequence != objectiveSequence &&
+           counter < nbSequences) {
+        lastGeneratedSequence = generateSequence(mt, objectiveSequence.size());
+        counter++;
+        if (counter % 100'000'000 == 0) {
+            std::unique_lock<std::mutex> lock(mutex);
+            std::cout << "countIter = " << counter
+                      << ", sequence: " << lastGeneratedSequence << std::endl;
         }
-        mutex.unlock();
     }
 
-    if (lasGeneratedWord == "GATTACA") {
-        mutex.lock();
-        std::cout << "GATTACA has been found, countIter = " << tmpCounter
-                  << std::endl;
-        G_run = false;
-        mutex.unlock();
+    if (lastGeneratedSequence == objectiveSequence) {
+        std::unique_lock<std::mutex> lock(mutex);
+        std::cout << objectiveSequence
+                  << " has been found, countIter = " << counter << std::endl;
     }
+    return counter;
 }
 
 /******************************************************************************/
@@ -60,8 +70,8 @@ void generateNWords(const std::string& fileName, int nbWords) {
 /******************************************************************************/
 
 /**
- * Génère des mots de 7 lettres jusqu'à ce que le mot GATTACA soit trouvé. La
- * génération des mots se fait sur plusieurs threads pour aller plus vite.
+ * Génère des séquences jusqu'à ce que la séquence GATTACA soit trouvée. La
+ * génération des séquence se fait sur plusieurs threads pour aller plus vite.
  *
  * Par défaut, on réutilise les fichiers générés à la question 3:
  * - 10 fichiers => 10 threads.
@@ -70,12 +80,19 @@ void generateNWords(const std::string& fileName, int nbWords) {
  *
  * On peut configurer la fonction si besoin.
  */
-void gattaca(long maxIter, int nbThreads, std::string fileName) {
-    std::future<void> *threads = new std::future<void>[nbThreads];
+void gattaca(int nbThreads, long maxIterPerThread, std::string fileName) {
+    std::future<int> *threads = new std::future<int>[nbThreads];
+    long long sum = 0;
 
     for (int i = 0; i < nbThreads; ++i) {
-        threads[i] = std::async(std::launch::async, generateNWords,
-                cat(fileName, i), maxIter / nbThreads);
+        threads[i] =
+            std::async(std::launch::async, generateNSequences, cat(fileName, i),
+                       maxIterPerThread, "AAATTTGCGTTCGATTAG");
     }
+
+    for (int i = 0; i < nbThreads; ++i) {
+        sum += threads[i].get();
+    }
+    std::cout << "mean: " << sum / nbThreads << std::endl;
     delete[] threads;
 }
