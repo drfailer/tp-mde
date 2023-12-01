@@ -7,7 +7,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 add_compile_options(-Wall -Wextra -O2 -g)
 
 set(SRC_FILES
-    src/main.cpp)
+    src/main.cpp
+    src/pi.cpp
+    src/status.cpp
+    src/gattaca.cpp)
 
 include_directories(${CMAKE_SOURCE_DIR}/lib/CLHEP-lib/include/)
 link_directories(${CMAKE_SOURCE_DIR}/lib/CLHEP-lib/lib/)
