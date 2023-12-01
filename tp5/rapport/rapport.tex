@@ -78,7 +78,7 @@ sous-modules git.
 
 Le clonage des sous-modules ne se fait pas automatiquement lors du clonage du
 projet. Pour avoir accès aux sous-modules, il faut utiliser les commandes
-suivantes:
+du listing \ref{git-sm}.
 
 \begin{listing}[ht!]
 \begin{minted}{bash}
@@ -86,7 +86,7 @@ suivantes:
   git submodule update
 \end{minted}
 \caption{Synchronisation des sous-modules git.}
-\label{lable}
+\label{git-sm}
 \end{listing}
 
 L'utilisation des sous-modules évite surcharger les serveurs contenant les
@@ -138,17 +138,201 @@ façon parallèle dans un second temps.
 Pour pouvoir paralléliser les calculs, il faut préalablement générer des
 fichiers de statuts pour pouvoir lancer le générateur à partir d'un point donné.
 Sans cette étape, les calculs lancés en parallèles utiliseront la même séquence
-de nombre pseudo-aléatoires, ce qui rendra la parallélisation inutile.
+de nombre pseudo-aléatoires, ce qui rendra la parallélisation inutile.\\
+
+La génération des fichiers de statuts se fait à l'aide de la fonction
+\lstinline{question3}. On peut configurer le nombre de fichiers à générer ainsi
+que le nombre de tirages séparant chaque statuts. Pour la suite, on utilisera
+les valeurs par défauts des paramètres. Il est important d'utiliser cette
+fonction avant de tester les autres fonctionnalité du programme car les fichiers
+de statuts seront utilisés dans les autres questions. Les fichiers générés sont
+nommés mt3\_1, mt3\_2, \dots
 
 \subsection{Calcul séquentiel}
 
+Dans un premier temps, nous allons réaliser le calcul de $\pi$ de façon
+séquentielle. Cela va permettre de vérifier notre algorithme et simplifiera la
+parallélisation.\\
+
+Pour le calcul séquentiel, nous utilisons la fonction \lstinline{question4} qui
+réalise plusieurs calculs de $\pi$ et qui calcule la moyenne des résultats pour
+avoir un valeur approchée. Cette fonction prend en paramètre le nombre de
+réplications du calcul ainsi que le nombre de tirages pour chaque réplication.
+Pour chaque réplication, on restaure un statut du générateur puis on utilise la
+fonction \lstinline{computePi}. Ici, il n'est pas vraiment nécessaire de
+restaurer les statuts du générateur à chaque itération, cependant, cela permet
+de facilement tester le code qui sera parallélisé par la suite. Le code de la
+fonction est visible sur le listing \ref{fn-qf}.
+
+\begin{listing}[ht!]
+\begin{minted}{CPP}
+void question4(size_t nbReplications, size_t nbDraws,
+               const std::string &fileName) {
+    CLHEP::MTwistEngine mt;
+    double sumPI = 0;
+
+    timerStart();
+    for (size_t i = 0; i < nbReplications; ++i) {
+        mt.restoreStatus(cat(fileName, i).c_str());
+        sumPI += computePi(mt, nbDraws);
+    }
+    timerEnd();
+
+    std::cout << std::setprecision(10) << "pi: " << sumPI / nbReplications
+              << "; time: " << timerCountMs() << std::endl;
+}
+\end{minted}
+\caption{Fonction question4.}
+\label{fn-qf}
+\end{listing}
+
+La fonction permet aussi de mesurer le temps de calcul en utilisant les macros
+visibles sur le listing \ref{macro-timer}. Ces macro permette d'avoir une
+approximation du nombre de mili-secondes écoulées durant un calcul. Ici, on
+choisit une précision à la micor-seconde ce qui est très élevé étant donnée le
+fait que l'exécution des calculs peut prendre plusieurs secondes. Cependant,
+cela reste intéressant s'il on souhaite faire des mesure plus précises.
+
+\begin{listing}[ht!]
+\begin{minted}{CPP}
+#define timerStart() auto _start = std::chrono::high_resolution_clock::now();
+#define timerEnd() auto _end = std::chrono::high_resolution_clock::now();
+#define timerCountMs()                                                         \
+    std::chrono::duration_cast<std::chrono::microseconds>(_end - _start)       \
+            .count() /                                                         \
+        1000.0
+\end{minted}
+\caption{Macro timer.}
+\label{macro-timer}
+\end{listing}
+
+Ici, le calcul prend plus d'une minute pour s'exécuter. Dans la partie suivante,
+nous allons comparer ce temps de calcul avec celui obtenu en parallélisant les
+calculs.
+
 \subsection{Calcul parallèle}
 
+Dans cette section nous allons paralléliser le calcul de $\pi$ avec la méthode
+de Monte Carlo. Nous commencerons par utiliser un script bash qui crée des
+processus, puis nous utiliserons les threads de la bibliothèque standard de C++.
+
 \subsubsection{Utilisation d'un script}
+\label{sec:script}
+
+Ici, nous allons utiliser un script bash pour paralléliser les calculs.
+L'objectif est de faire en sorte de pouvoir passer en argument du programme le
+nom d'un fichier de statut à charger de sorte à pouvoir lancer plusieurs fois le
+même programme en tâche de fond avec un fichier différent.\\
+
+La fonction \lstinline{question5} est une version simplifiée de la fonction
+\lstinline{question4} qui ne lance qu'une fois le calcul. La fonction prend
+aussi en argument le nom du fichier de statut à charger pour initialiser le
+générateur.
+
+Le script utilisé pour lancer les processus est visible sur le listing
+\ref{script}. Ici, on commence par vérifier que le projet est bien compilé et
+que les fichiers de statuts ont bien été généré (dans le cas contraire, on fait
+le nécessaire) avec la fonction \lstinline{checkSetup}. Ensuite on défini le nom
+des fichiers de sortie du programme (le nom est configurable avec les argument
+du script), puis on lance 10 processus en tâche de fond (utilisation du
+\lstinline{\&} en fin de ligne) avec une boucle \lstinline{for}. Une fois
+l'exécution terminée, les résultats sont stockés dans les fichiers du répertoire
+\lstinline{out/}.
+
+\begin{listing}[ht!]
+\begin{minted}{bash}
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+checkSetup() {
+  # ...
+}
+
+checkSetup
+
+# configure output file
+outputFile=pi
+if [ $# -eq 1 ]; then
+    outputFile=$1
+fi
+mkdir -p out
+
+# compute pi
+echo "computing pi"
+for i in {0..9}; do
+    echo "./build/tp5 ./build/mt3_$i"
+    ./build/tp5 "./build/mt3_$i" > "./out/$outputFile$i.out" &
+done
+
+# wait and quit
+time wait
+echo "done"
+\end{minted}
+\caption{Script compute\_pi.sh}
+\label{script}
+\end{listing}
+
+À noter qu'à la fin du script on utilise la commande \lstinline{wait} qui va
+permettre d'attendre que tous les processus lancés en tâche de fond se terminent
+pour quitter le programme. On emploie aussi la commande \lstinline{time} pour
+mesurer le temps de calcul total (on considère que le temps de lancement des
+processus est négligeable, on ne le prend donc pas en compte ici).\\
+
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[scale=0.5]{./img/pi_script.png}
+  \caption{Résultat du script lancé sur Ada.}
+  \label{fig:script}
+\end{figure}
+
+Comme on peut le voir sur la figure \ref{fig:script}, le calcul prend environ
+dix secondes ce qui est bien plus rapide que le temps de calcul séquentiel.
 
 \subsubsection{Utilisation des threads}
 
+La seconde solution utilise les threads de la bibliothèque standard de C++. Ici,
+on utilise la fonction \lstinline{question6a} disponible en deux version, une
+utilisant directement les threads, et une autre utilisant l'abstraction
+\lstinline{std::future}. Les deux version utilisent la fonction
+\lstinline{question5} présentée dans la section \ref{sec:script}.
+
+\begin{listing}[ht!]
+\begin{minted}{CPP}
+void question6aFuture(const std::string &fileName, size_t nbDraw) {
+    CLHEP::MTwistEngine mt;
+    size_t i;
+
+    timerStart();
+    /* threads scope */ {
+        std::future<void> pis[NB_REPLICATION];
+        for (i = 0; i < NB_REPLICATION; ++i) {
+            pis[i] = std::async(std::launch::async, question5, cat(fileName, i),
+                                nbDraw);
+        }
+    }
+    timerEnd();
+    std::cout << "total time: " << timerCountMs() / 1000.0 << "s" << std::endl;
+}
+\end{minted}
+\caption{Fonction question6aFuture.}
+\label{fn-q6}
+\end{listing}
+
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[scale=0.5]{./img/pi_threads.png}
+  \caption{Résultat du script lancé sur Ada.}
+  \label{fig:threads}
+\end{figure}
+
+Comme on peut le voir sur la figure \ref{fig:threads}, le temps de calcul est
+similaire à celui du script ce qui est logique étant donné le fait que le même
+nombre de thread a été utilisé.
+
 \section{Gattaca}
+
+\section{Génération de bases nucléiques}
 
 \section{Conclusion}
 
