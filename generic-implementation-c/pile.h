@@ -2,8 +2,6 @@
 #define PILE_HPP
 #include <stdbool.h>
 
-// TODO
-
 #define TAILLE_MAX 100
 #define declarer_pile(Type)                               \
 typedef struct Pile##Type Pile##Type;                     \
@@ -25,20 +23,17 @@ struct Pile##Type {                                       \
     MetaPile##Type *myClass;                              \
 };                                                        \
                                                           \
-/* création de la pile */                                 \
-Type make_pile##Type(struct Pile##Type* this);            \
-                                                          \
 /* empile la valeur */                                    \
-void empiler##Type(struct Pile##Type* this, Type valeur); \
+void empiler##Type(Pile##Type* this, Type valeur);        \
                                                           \
 /* dépile en retournant le sommet */                      \
-Type depiler##Type(struct Pile##Type* this);              \
+Type depiler##Type(Pile##Type* this);                     \
                                                           \
 /* Prédicat : la pile est-elle vide ? */                  \
-bool estVide##Type(struct Pile##Type* this);              \
+bool estVide##Type(Pile##Type* this);                     \
                                                           \
 /* renvoie le sommet de pile */                           \
-Type sommet##Type(struct Pile##Type* this);               \
+Type sommet##Type(Pile##Type* this);                      \
                                                           \
 /* constructeur */                                        \
 Pile##Type construirePile##Type(void);
@@ -60,7 +55,7 @@ Pile##Type construirePile##Type(void) {                    \
 }                                                          \
                                                            \
 /* empile la valeur */                                     \
-void empiler##Type(struct Pile##Type* this, Type valeur) { \
+void empiler##Type(Pile##Type* this, Type valeur) {        \
     if (this->top == 0) {                                  \
         this->top = &this->pile[0];                        \
     } else {                                               \
@@ -72,7 +67,7 @@ void empiler##Type(struct Pile##Type* this, Type valeur) { \
 }                                                          \
                                                            \
 /* dépile en retournant le sommet */                       \
-Type depiler##Type(struct Pile##Type* this) {              \
+Type depiler##Type(Pile##Type* this) {                     \
     Type output = *this->top;                              \
     if (this->top == &this->pile[0]) {                     \
         this->top = 0;                                     \
@@ -83,12 +78,12 @@ Type depiler##Type(struct Pile##Type* this) {              \
 }                                                          \
                                                            \
 /* Prédicat : la pile est-elle vide ? */                   \
-bool estVide##Type(struct Pile##Type* this) {              \
+bool estVide##Type(Pile##Type* this) {                     \
     return this->top == 0;                                 \
 }                                                          \
                                                            \
 /* renvoie le sommet de pile */                            \
-Type sommet##Type(struct Pile##Type* this) {               \
+Type sommet##Type(Pile##Type* this) {                      \
     if (*this->top == 0) return -1;                        \
     return *this->top;                                     \
 }
