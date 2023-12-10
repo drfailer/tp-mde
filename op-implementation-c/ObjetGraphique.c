@@ -77,21 +77,26 @@ void deplacerOG(ObjetGraphique* this, int x, int y) {
 
 ObjetGraphique ConstructorObjetGraphique() {
     C_MetaObjetGraphique.NbObjetGraphique++;
-    return (ObjetGraphique) { .x = 0, .y = 0, .myClass = &C_MetaObjetGraphique };
+    return (ObjetGraphique) {
+        .x = 0,
+        .y = 0,
+        .myClass = &C_MetaObjetGraphique,
+        .type = OG
+    };
 }
 
 /* méthodes virtuelles ********************************************************/
 
 void afficher(ObjetGraphique* this) {
-    return C_MetaObjetGraphique.TVMafficher[this->type](this);
+    C_MetaObjetGraphique.TVMafficher[this->type](this);
 }
 
 void deplacer(ObjetGraphique* this, int x, int y) {
-    return C_MetaObjetGraphique.TVMdeplacer[this->type](this, x, y);
+    C_MetaObjetGraphique.TVMdeplacer[this->type](this, x, y);
 }
 
 void effacer(ObjetGraphique* this) {
-    return C_MetaObjetGraphique.TVMeffacer[this->type](this);
+    C_MetaObjetGraphique.TVMeffacer[this->type](this);
 }
 
 int getCentreX(ObjetGraphique* this) {
@@ -124,24 +129,24 @@ int getRayon(Cercle* this) {
 /* méthodes virtuelles ********************************************************/
 
 void afficherCercle(ObjetGraphique* this) {
-    struct Cercle* thisCercle = (struct Cercle*) this;
+    Cercle* thisCercle = (Cercle*) this;
     printf("cercle: [ x: %d, y: %d, r: %d ]\n",
             thisCercle->super.x, thisCercle->super.y, thisCercle->rayon);
 }
 
 void effacerCercle(ObjetGraphique* this) {
-    struct Cercle* thisCercle = (struct Cercle*) this;
+    Cercle* thisCercle = (Cercle*) this;
     printf("On éfface le cercle: ");
     thisCercle->super.myClass->afficher(&thisCercle->super);
 }
 
 int getCentreXCercle(ObjetGraphique* this) {
-    struct Cercle* thisCercle = (struct Cercle*) this;
+    Cercle* thisCercle = (Cercle*) this;
     return thisCercle->super.x;
 }
 
 int getCentreYCercle(ObjetGraphique* this) {
-    struct Cercle* thisCercle = (struct Cercle*) this;
+    Cercle* thisCercle = (Cercle*) this;
     return thisCercle->super.y;
 }
 
@@ -189,25 +194,25 @@ int getLargeur(Rectangle* this) {
 /* méthodes virtuelles ********************************************************/
 
 void afficherRectangle(ObjetGraphique* this) {
-    struct Rectangle* thisRectangle = (struct Rectangle*) this;
+    Rectangle* thisRectangle = (Rectangle*) this;
     printf("rectangle: [ x: %d, y: %d, l: %d, h: %d ]\n",
             thisRectangle->super.x, thisRectangle->super.y,
             thisRectangle->lageur, thisRectangle->hauteur);
 }
 
 void effacerRectangle(ObjetGraphique* this) {
-    struct Rectangle* thisRectangle = (struct Rectangle*) this;
-    printf("On affiche le rectangle: ");
+    Rectangle* thisRectangle = (Rectangle*) this;
+    printf("On efface le rectangle: ");
     thisRectangle->super.myClass->afficher(&thisRectangle->super);
 }
 
 int getCentreXRectangle(ObjetGraphique* this) {
-    struct Rectangle* thisRectangle = (struct Rectangle*) this;
+    Rectangle* thisRectangle = (Rectangle*) this;
     return thisRectangle->super.x + thisRectangle->lageur / 2;
 }
 
 int getCentreYRectangle(ObjetGraphique* this) {
-    struct Rectangle* thisRectangle = (struct Rectangle*) this;
+    Rectangle* thisRectangle = (Rectangle*) this;
     return thisRectangle->super.y + thisRectangle->hauteur / 2;
 }
 
