@@ -14,6 +14,7 @@ Métaprogrammation
 Réflexivité
 : capacité d'appliquer ses propres outils sur soi-même. Par exemple EBNF est un
   métalangage réflexif car il peut décrire sa propre grammaire. Idem pour UML.
+: un métamodèle qui se décrit lui-même.
 
 ## IDM
 
