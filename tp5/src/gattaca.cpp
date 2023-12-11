@@ -1,7 +1,7 @@
 #include "gattaca.hpp"
 #include "utils.hpp"
-#include <future>
 #include <iostream>
+#include <future>
 #include <mutex>
 
 /******************************************************************************/

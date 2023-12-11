@@ -79,11 +79,11 @@ int main(int argc, char **argv) {
         break;
     case GATTACA_GEN:
         std::cout << "gattaca status generation:" << std::endl;
-        question3(40, 400'000'000, "gattaca/gattaca_");
+        question3(40, 70'000'000'000, "gattaca/gattaca_");
         break;
     case GATTACA:
         std::cout << "gattaca generation:" << std::endl;
-        gattaca(40, 400'000'000, "gattaca/gattaca_");
+        gattaca(40, 70'000'000'000, "gattaca/gattaca_");
         break;
     case PI_INPUT_FILE:
         question5(argv[1]);
