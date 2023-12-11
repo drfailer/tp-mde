@@ -39,7 +39,7 @@ std::string generateSequence(CLHEP::HepRandomEngine &generator,
  * `objectiveSequence` est trouvée. Le générateur est initialisé avec le fichier
  * de status `fileName`. Cette fonction est faite pour être parallélisée.
  */
-int generateNSequences(const std::string &fileName, int nbSequences,
+int generateNSequences(const std::string &fileName, long nbSequences,
                         std::string objectiveSequence) {
     std::string lastGeneratedSequence = "";
     CLHEP::MTwistEngine mt;
@@ -93,6 +93,6 @@ void gattaca(int nbThreads, long maxIterPerThread, std::string fileName) {
     for (int i = 0; i < nbThreads; ++i) {
         sum += threads[i].get();
     }
-    std::cout << "mean: " << sum / nbThreads << std::endl;
+    std::cout << "mean: " << (long long) sum / nbThreads << std::endl;
     delete[] threads;
 }
