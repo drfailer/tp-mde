@@ -344,11 +344,69 @@ est logique étant donné le fait que le même nombre de threads a été utilis�
 
 Dans cette section, nous allons traiter un nouvel exemple de calcul parallèle.
 Ici, on va simuler la génération de séquence de bases nucléiques. Ces bases sont
-symbolisées par des lettres avec quatre possibilités A, C, G et T.
+symbolisées par des lettres avec quatre possibilités A, C, G et T. Dans un
+premier temps, on va chercher à générer une séquence simple, "GATTACA". Ensuite,
+on discutera de la génération de séquences plus complexes.\\
+
+Pour générer une séquence avec un certain nombre de bases, on utilise la
+fonction \lstinline{generateSequence}. Cette fonction var permettre de générer
+une séquence, sous forme de chaine de caractères, avec une taille configurable.
+
+Ensuite, on utilise la fonction \lstinline{generateNSequences} qui va permettre
+de générer un certain nombre de séquences. Cette fonction prend en paramètre une
+séquence à chercher. La fonction s'arrête lorsque cette séquence est trouvée (ou
+lorsque le compteur atteint le nombre maximum d'itérations). Cette fonction est
+faite pour être parallélisée.
+
+Enfin, la fonction \lstinline{gattaca}, va lacer la fonction
+\lstinline{generateNSequences} dans un certains nombre de threads et elle va
+collecter les résultats. À la fin, la fonction affiche le nombre de tirage moyen
+nécessaire pour trouver la séquence recherchée.\\
+
+À noter qu'avant de lancer la simulation, il faut générer les fichiers de
+statuts du générateur. Pour ce faire, il faut utiliser les options
+\lstinline{gattaca} et \lstinline{gen} comme sur le listing \ref{cmds-gattaca}.
+
+\begin{listing}[ht!]
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,bgcolor=LightGray,fontsize=\normalsize,linenos]{bash}
+  ./tp5 gattaca gen # génération des fichiers de statuts
+  ./tp5 gattaca     # lancement de la simulation
+\end{minted}
+\caption{Lancement de la simulation GATTACA.}
+\label{cmds-gattaca}
+\end{listing}
+
+Avec les règles énoncées précédemment, il y en tout $4^7 = 16,384$ possibilités
+lorsque l'on génère des séquences de 7 bases (GATTACA est une séquence de 7
+bases). En moyenne, il faut générer $11,351$ séquences pour trouver GATTACA (avec
+le programme actuel), sachant que le nombre minimum d'essais trouvé par la
+simulation est de $94$ et le nombre maximum est de $48,787$. L'écart type est
+d'environ $11,789$.\\
+
+La séquence GATTACA très courte et nombre de possibilités est assez faible. La
+génération d'une séquence plus grande peut prendre beaucoup de temps. Par
+exemple, pour chercher une séquence de 18 bases comme
+\lstinline{AAATTTGCGTTCGATTAG}, il y a en tout $4^{18} = 68,719,476,736$
+possibilités. Ici, la plus grosse limitation vient de la génération des fichiers
+de statuts. En effet, la génération des fichiers se fait de manière
+séquentielle. Ici, si l'on souhaité paralléliser la recherche sur $N$ threads,
+il faudrait générer $N$ fichiers de statuts avec environ 70 milliards de tirage,
+ce qui prendrait énormément de temps. Le problème de la génération de phrases
+est encore plus complexe car ici, il y a encore plus de possibilités.
 
 \clearpage
 \section{Conclusion}
 
-TODO
+En conclusion, on peut dire que les problèmes de simulation stochastiques sont
+facilement parallélisables. Cependant, avec des générateurs tels que Mersenne
+Twister, on reste limité par le fait que l'on ne peut pas facilement lancer le
+générateur à partir d'un certain point. La méthode employée ici consistait en la
+génération de fichiers de statuts, cependant pour créer ces derniers il faut
+tout de même faire des tirages avec le générateur. Cela peut prendre beaucoup de
+temps et la génération doit obligatoirement se faire de façon séquentielle.
+
+Ce problème pousse les créateur de générateur à trouver de nouvelles méthodes.
+Par exemple, Makoto Matsumoto a créé un \textit{"générateur de générateur"} qui
+cré différents Mercenne Twister, et ce, de manière efficace.
 
 \end{document}
