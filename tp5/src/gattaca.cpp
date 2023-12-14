@@ -80,19 +80,20 @@ int generateNSequences(const std::string &fileName, long nbSequences,
  *
  * On peut configurer la fonction si besoin.
  */
-void gattaca(int nbThreads, long maxIterPerThread, std::string fileName) {
+void gattaca(int nbThreads, long maxIterPerThread, std::string fileName,
+        std::string sequence) {
     std::future<int> *threads = new std::future<int>[nbThreads];
     long long sum = 0;
 
     for (int i = 0; i < nbThreads; ++i) {
         threads[i] =
             std::async(std::launch::async, generateNSequences, cat(fileName, i),
-                       maxIterPerThread, "AAATTTGCGTTCGATTAG");
+                       maxIterPerThread, sequence);
     }
 
     for (int i = 0; i < nbThreads; ++i) {
         sum += threads[i].get();
     }
-    std::cout << "mean: " << (long long) sum / nbThreads << std::endl;
+    std::cout << "mean: " << (long) sum / nbThreads << std::endl;
     delete[] threads;
 }

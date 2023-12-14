@@ -55,6 +55,11 @@ ACTIONS parseCommandLine(int argc, char **argv) {
 /*                                    main                                    */
 /******************************************************************************/
 
+/* options ********************************************************************/
+constexpr long GATTACA_NUMBERS = 10'000;
+constexpr long GATTACA_THREADS = 40;
+constexpr const char* GATTACA_SEQUENCE = "GATTACA";
+
 int main(int argc, char **argv) {
     std::cout << std::setprecision(10);
 
@@ -79,11 +84,11 @@ int main(int argc, char **argv) {
         break;
     case GATTACA_GEN:
         std::cout << "gattaca status generation:" << std::endl;
-        question3(40, 70'000'000'000, "gattaca/gattaca_");
+        question3(GATTACA_THREADS, GATTACA_NUMBERS, "gattaca/gattaca_");
         break;
     case GATTACA:
         std::cout << "gattaca generation:" << std::endl;
-        gattaca(40, 70'000'000'000, "gattaca/gattaca_");
+        gattaca(GATTACA_THREADS, GATTACA_NUMBERS, "gattaca/gattaca_", GATTACA_SEQUENCE);
         break;
     case PI_INPUT_FILE:
         question5(argv[1]);
