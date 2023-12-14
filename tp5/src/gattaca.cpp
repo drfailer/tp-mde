@@ -14,22 +14,10 @@
 std::string generateSequence(CLHEP::HepRandomEngine &generator,
                              int nbNucleicBase) {
     std::string output = "";
+    char letters[4] = { 'A', 'C', 'G', 'T' };
 
     for (int i = 0; i < nbNucleicBase; ++i) {
-        switch (int(generator.flat() * 4)) {
-        case 0:
-            output.push_back('A');
-            break;
-        case 1:
-            output.push_back('C');
-            break;
-        case 2:
-            output.push_back('G');
-            break;
-        case 3:
-            output.push_back('T');
-            break;
-        }
+        output.push_back(letters[int(generator.flat() * 4)]);
     }
     return output;
 }

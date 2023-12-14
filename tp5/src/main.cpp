@@ -56,7 +56,7 @@ ACTIONS parseCommandLine(int argc, char **argv) {
 /******************************************************************************/
 
 /* options ********************************************************************/
-constexpr long GATTACA_NUMBERS = 10'000;
+constexpr long GATTACA_NUMBERS = 1'000'000;
 constexpr long GATTACA_THREADS = 40;
 constexpr const char* GATTACA_SEQUENCE = "GATTACA";
 
