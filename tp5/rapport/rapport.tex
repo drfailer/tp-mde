@@ -5,6 +5,7 @@
 \usepackage{textcomp}
 \usepackage{multicol}
 \usepackage{verbatim,listings,minted}
+\usepackage{xcolor}
 \usepackage{mathtools,amssymb,amsthm}
 \usepackage[a4paper, total={6in, 8in}]{geometry}
 \usepackage[francais]{babel}
@@ -20,6 +21,9 @@
 
 %================image=================
 \usepackage{graphicx}
+
+%================colors================
+\definecolor{LightGray}{gray}{0.9}
 
 %------------------------------------------------------------------------------%
 %                                   document                                   %
@@ -59,13 +63,21 @@
 
 \section{Introduction}
 
-L'objectif de ce TP est d'utiliser le un générateur de nombres pseudo-aléatoires
+L'objectif de ce TP est d'utiliser un générateur de nombres pseudo-aléatoires
 pour réaliser des calculs en parallèle. Pour générer les nombres nous
 utiliserons l'implémentation de Mersenne Twister fournie par la bibliothèque
 CLHEP. Nous commencerons par détailler l'installation de la bibliothèque, puis
-nous testerons la répétabilité des séquences de nombres générés aléatoirement.
-Ensuite, nous traiterons l'exemple simple du calcul du nombre $\pi$, d'abord en
-séquentiel, puis en parallèle.
+nous testerons la répétabilité de séquence de nombres générés aléatoirement
+ainsi que le bon fonctionnement de la sauvegarde de statuts du générateur dans
+des fichiers. Ensuite, nous traiterons l'exemple simple du calcul du nombre
+$\pi$, d'abord en séquentiel, puis en parallèle. Enfin, nous traiterons un autre
+exemple consistant à générer des séquences de bases nucléiques.\\
+
+Pour pouvoir paralléliser les calculs nous commencerons par pré-générer des
+fichiers de statuts de Mersenne Twister. En effet, ce générateur produit
+toujours la même séquence de nombre (avec la seed fournie par Makoto Matsumoto).
+Pour pouvoir paralléliser les calculs, on doit pouvoir lancer le générateur à
+partir d'un certain état et pour ce faire on utilisera des fichiers de statuts.
 
 \clearpage
 
@@ -80,11 +92,11 @@ projet. Pour avoir accès aux sous-modules, il faut utiliser les commandes
 du listing \ref{git-sm}.
 
 \begin{listing}[ht!]
-\begin{minted}{bash}
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,bgcolor=LightGray,fontsize=\normalsize,linenos]{bash}
   git submodule init
   git submodule update
 \end{minted}
-\caption{Synchronisation des sous-modules git.}
+\caption{Clonage des sous-modules git.}
 \label{git-sm}
 \end{listing}
 
@@ -97,23 +109,33 @@ Pour compiler la bibliothèque, il faut utiliser le script \lstinline{build.sh}
 du répertoire \lstinline{lib}. Ce script va permettre de compiler et d'installer
 la bibliothèque (fichiers d'entêtes, bibliothèque statiques, \dots) dans le
 répertoire \lstinline{lib/CLHEP-lib}. Ensuite, on peut compiler le projet en
-utilisant CMake.
+utilisant CMake (utiliser un répertoire \lstinline{build/} à la racine du
+projet).
+
+À noter que pour compiler la bibliothèque CLHEP, le script \lstinline{build.sh}
+utilise \lstinline{make} avec l'option \lstinline{-j} pour paralléliser le
+compilation. Cette option est pratique car elle permet de compiler les fichiers
+plus rapidement, cependant, elle peut être consommatrice en ressource. En effet,
+ici, on ne spécifie pas le nombre de threads donc \lstinline{make} utilise
+toutes les ressources disponibles. Sur une machine peu puissante, il est
+recommandé de modifier le script soit en spécifiant une limite après l'option,
+soit la supprimant.
 
 \section{Test du générateur}
 
 Avant de commencer les calculs, assurons-nous que le générateur produit bien
-toujours les même séquences de nombres lorsqu'il charge les fichiers de
+toujours les mêmes séquences de nombres lorsqu'il charge les fichiers de
 statuts.\\
 
 La générations des fichier de statuts se fait avec la méthode
-\lstinline{saveStatus} et le chargement des fichiers se fait avec la méthode
-\lstinline{restoreStatus}. Dans la fonction \lstinline{question2}, nous générons
-dans un premier temps des fichiers de statuts, et chaque statuts est séparé par
-un certain nombre de tirage de nombre pseudo-aléatoires. Les tirages sont
-sauvegardés dans un tableau.
+\lstinline{saveStatus} et le chargement des fichiers se fait avec
+\lstinline{restoreStatus}. Dans la fonction \lstinline{checkReproducibility},
+nous générons dans un premier temps des fichiers de statuts, et chaque statuts
+est séparé par un certain nombre de tirages de nombres pseudo-aléatoires. Les
+tirages sont sauvegardés dans un tableau.
 
 Dans un second temps, nous restaurons les statuts et nous vérifions que les
-tirages sont les même que ceux sauvegardés précédemment. Ici, nous utilisons un
+tirages sont les mêmes que ceux sauvegardés précédemment. Ici, nous utilisons un
 \lstinline{assert} pour tester l'égalité des nombres. Si les nouveaux nombres
 générés ne sont pas égaux à ceux sauvegardés, le programme s'arrête avec un code
 erreur. Si le programme se termine sans échouer, le test du générateur est
@@ -127,7 +149,7 @@ un petit nombre de tirages.
 
 \section{Calcul de pi}
 
-Maintenant que nous avons vérifier le bon fonctionnement du générateur, nous
+Maintenant que nous avons vérifié le bon fonctionnement du générateur, nous
 allons réaliser un simple calcul de $\pi$ en utilisant la méthode de Monte
 Carlo. Le calcul sera fait de façon séquentielle dans un premier temps, puis de
 façon parallèle dans un second temps.
@@ -137,15 +159,15 @@ façon parallèle dans un second temps.
 Pour pouvoir paralléliser les calculs, il faut préalablement générer des
 fichiers de statuts pour pouvoir lancer le générateur à partir d'un point donné.
 Sans cette étape, les calculs lancés en parallèles utiliseront la même séquence
-de nombre pseudo-aléatoires, ce qui rendra la parallélisation inutile.\\
+de nombre pseudo-aléatoires, ce qui rendrait la parallélisation inutile.\\
 
 La génération des fichiers de statuts se fait à l'aide de la fonction
-\lstinline{question3}. On peut configurer le nombre de fichiers à générer ainsi
-que le nombre de tirages séparant chaque statuts. Pour la suite, on utilisera
-les valeurs par défauts des paramètres. Il est important d'utiliser cette
-fonction avant de tester les autres fonctionnalité du programme car les fichiers
-de statuts seront utilisés dans les autres questions. Les fichiers générés sont
-nommés mt3\_1, mt3\_2, \dots
+\lstinline{generateStatusFiles}. On peut configurer le nombre de fichiers à
+générer ainsi que le nombre de tirages séparant chaque statuts. Pour la suite,
+on utilisera les valeurs par défauts des paramètres. Il est important d'utiliser
+cette fonction avant de tester les autres fonctionnalité du programme car les
+fichiers de statuts seront utilisés dans les autres questions. Les fichiers
+générés sont nommés mt3\_1, mt3\_2, \dots
 
 \subsection{Calcul séquentiel}
 
@@ -164,7 +186,7 @@ de facilement tester le code qui sera parallélisé par la suite. Le code de la
 fonction est visible sur le listing \ref{fn-qf}.
 
 \begin{listing}[ht!]
-\begin{minted}{CPP}
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,bgcolor=LightGray,fontsize=\normalsize,linenos]{CPP}
 void question4(size_t nbReplications, size_t nbDraws,
                const std::string &fileName) {
     CLHEP::MTwistEngine mt;
@@ -186,14 +208,14 @@ void question4(size_t nbReplications, size_t nbDraws,
 \end{listing}
 
 La fonction permet aussi de mesurer le temps de calcul en utilisant les macros
-visibles sur le listing \ref{macro-timer}. Ces macro permette d'avoir une
+visibles sur le listing \ref{macro-timer}. Ces macros permettent d'avoir une
 approximation du nombre de mili-secondes écoulées durant un calcul. Ici, on
-choisit une précision à la micor-seconde ce qui est très élevé étant donnée le
+choisit une précision à la micor-seconde ce qui est très élevé étant donné le
 fait que l'exécution des calculs peut prendre plusieurs secondes. Cependant,
-cela reste intéressant s'il on souhaite faire des mesure plus précises.
+cela reste intéressant s'il on souhaite faire des mesures plus précises.
 
 \begin{listing}[ht!]
-\begin{minted}{CPP}
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,bgcolor=LightGray,fontsize=\normalsize,linenos]{CPP}
 #define timerStart() auto _start = std::chrono::high_resolution_clock::now();
 #define timerEnd() auto _end = std::chrono::high_resolution_clock::now();
 #define timerCountMs()                                                         \
@@ -230,16 +252,16 @@ générateur.
 
 Le script utilisé pour lancer les processus est visible sur le listing
 \ref{script}. Ici, on commence par vérifier que le projet est bien compilé et
-que les fichiers de statuts ont bien été généré (dans le cas contraire, on fait
-le nécessaire) avec la fonction \lstinline{checkSetup}. Ensuite on défini le nom
-des fichiers de sortie du programme (le nom est configurable avec les argument
-du script), puis on lance 10 processus en tâche de fond (utilisation du
+que les fichiers de statuts ont bien été générés (dans le cas contraire, on fait
+le nécessaire) avec la fonction \lstinline{checkSetup}. Ensuite on définit le
+nom des fichiers de sortie du programme (le nom est configurable avec les
+argument du script), puis on lance 10 processus en tâche de fond (utilisation du
 \lstinline{\&} en fin de ligne) avec une boucle \lstinline{for}. Une fois
 l'exécution terminée, les résultats sont stockés dans les fichiers du répertoire
 \lstinline{out/}.
 
 \begin{listing}[ht!]
-\begin{minted}{bash}
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,bgcolor=LightGray,fontsize=\normalsize,linenos]{bash}
 #!/usr/bin/env bash
 
 set -euo pipefail
@@ -277,29 +299,24 @@ echo "done"
 permettre d'attendre que tous les processus lancés en tâche de fond se terminent
 pour quitter le programme. On emploie aussi la commande \lstinline{time} pour
 mesurer le temps de calcul total (on considère que le temps de lancement des
-processus est négligeable, on ne le prend donc pas en compte ici).\\
+processus est négligeable, on ne le prend donc pas en compte ici). Le calcul
+prend environ dix secondes ce qui est bien plus rapide que le temps de calcul
+séquentiel.\\
 
-\begin{figure}[ht!]
-  \centering
-  \includegraphics[scale=0.5]{./img/pi_script.png}
-  \caption{Résultat du script lancé sur Ada.}
-  \label{fig:script}
-\end{figure}
+Dans cette section, nous avons utilisé un script pour paralléliser les calculs.
+Dans la section suivante, nous utiliserons les threads de la bibliothèque
+standard C++.
 
-Comme on peut le voir sur la figure \ref{fig:script}, le calcul prend environ
-dix secondes ce qui est bien plus rapide que le temps de calcul séquentiel.
-
-\clearpage
 \subsubsection{Utilisation des threads}
 
 La seconde solution utilise les threads de la bibliothèque standard de C++. Ici,
-on utilise la fonction \lstinline{question6a} disponible en deux version, une
+on utilise la fonction \lstinline{question6a} disponible en deux versions, une
 utilisant directement les threads, et une autre utilisant l'abstraction
 \lstinline{std::future}. Les deux version utilisent la fonction
 \lstinline{question5} présentée dans la section \ref{sec:script}.
 
 \begin{listing}[ht!]
-\begin{minted}{CPP}
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,bgcolor=LightGray,fontsize=\normalsize,linenos]{CPP}
 void question6aFuture(const std::string &fileName, size_t nbDraw) {
     CLHEP::MTwistEngine mt;
     size_t i;
@@ -320,17 +337,14 @@ void question6aFuture(const std::string &fileName, size_t nbDraw) {
 \label{fn-q6}
 \end{listing}
 
-\begin{figure}[ht!]
-  \centering
-  \includegraphics[scale=0.5]{./img/pi_threads.png}
-  \caption{Résultat du script lancé sur Ada.}
-  \label{fig:threads}
-\end{figure}
-\clearpage
+Pour cette solution, le temps de calcul est similaire à celui du script ce qui
+est logique étant donné le fait que le même nombre de threads a été utilisé.
 
-Comme on peut le voir sur la figure \ref{fig:threads}, le temps de calcul est
-similaire à celui du script ce qui est logique étant donné le fait que le même
-nombre de threads a été utilisé.
+\section{Gattaca}
+
+Dans cette section, nous allons traiter un nouvel exemple de calcul parallèle.
+Ici, on va simuler la génération de séquence de bases nucléiques. Ces bases sont
+symbolisées par des lettres avec quatre possibilités A, C, G et T.
 
 \clearpage
 \section{Conclusion}
