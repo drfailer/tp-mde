@@ -4,6 +4,9 @@
 #include <bits/chrono.h>
 #include <mutex>
 #include <sstream>
+#include <algorithm>
+#include <filesystem>
+#include <iostream>
 
 /******************************************************************************/
 /*                              global variable                               */
@@ -32,5 +35,18 @@ inline std::string cat(const std::string &str, int i) {
     return oss.str();
 }
 
+inline void createFileDirectory(std::string pathToFile) {
+    auto pathEnd = std::find(pathToFile.rbegin(), pathToFile.rend(), '/');
+
+    // create directory if needed
+    if (pathEnd != pathToFile.rbegin()) {
+        std::string path = pathToFile.substr(0, std::distance(pathEnd, pathToFile.rend()));
+
+        if (!std::filesystem::exists(path)) {
+            std::cout << "creating: " << path << std::endl;
+            std::filesystem::create_directory(path);
+        }
+    }
+}
 
 #endif

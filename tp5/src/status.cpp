@@ -52,6 +52,9 @@ void question3(size_t nbStatusFiles, size_t separarationNb,
                const std::string &fileName) {
     CLHEP::MTwistEngine mt;
 
+    // create directory if needed
+    createFileDirectory(fileName);
+
     // sauvegarde de statut et de tirages
     for (size_t i = 0; i < nbStatusFiles; ++i) {
         mt.saveStatus(cat(fileName, i).c_str());
