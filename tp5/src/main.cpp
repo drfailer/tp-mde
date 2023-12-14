@@ -66,14 +66,14 @@ int main(int argc, char **argv) {
     switch (parseCommandLine(argc, argv)) {
     case TEST:
         std::cout << "testing reapetability of the genrator:" << std::endl;
-        question2();
+        checkReproducibility();
         break;
     case GEN_STATUS:
         std::cout << "questions 3 (generate files)" << std::endl;
-        question3();
+        generateStatusFiles();
         break;
     case PI_SEC:
-        std::cout << "compute pi:" << std::endl;
+        std::cout << "compute pi (sequencial):" << std::endl;
         question4();
         break;
     case PI_PAR:
@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
         break;
     case GATTACA_GEN:
         std::cout << "gattaca status generation:" << std::endl;
-        question3(GATTACA_THREADS, GATTACA_NUMBERS, "gattaca/gattaca_");
+        generateStatusFiles(GATTACA_THREADS, GATTACA_NUMBERS, "gattaca/gattaca_");
         break;
     case GATTACA:
         std::cout << "gattaca generation:" << std::endl;

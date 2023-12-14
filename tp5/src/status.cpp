@@ -19,7 +19,7 @@ constexpr size_t SEPARATION_NB = 10;
  * Vérification de la reproductibilité des séquences de nombres
  * pseudo-aléatoires générés par l'implémentation de MT de la bibliothèque.
  */
-void question2() {
+void checkReproducibility() {
     CLHEP::MTwistEngine mt;
     double savedRandoms[NB_STATUS_FILE][SEPARATION_NB];
 
@@ -30,6 +30,7 @@ void question2() {
             savedRandoms[i][j] = mt.flat();
         }
     }
+
     // test si on retrouve bien les tirages
     for (size_t i = 0; i < NB_STATUS_FILE; ++i) {
         mt.restoreStatus(cat("mt2_", i).c_str());
@@ -46,13 +47,14 @@ void question2() {
 /******************************************************************************/
 
 /**
- * Archive de fichiers statut avec MT.
+ * Génération de fichiers statut avec MT avec un certain nombre de tirage entre
+ * les fichiers.
  */
-void question3(size_t nbStatusFiles, size_t separarationNb,
+void generateStatusFiles(size_t nbStatusFiles, size_t separarationNb,
                const std::string &fileName) {
     CLHEP::MTwistEngine mt;
 
-    // create directory if needed
+    // création de répertoire si besoin
     createFileDirectory(fileName);
 
     // sauvegarde de statut et de tirages
