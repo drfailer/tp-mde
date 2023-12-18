@@ -177,7 +177,7 @@ générer ainsi que le nombre de tirages séparant chaque statuts. Pour la suite
 on utilisera les valeurs par défauts des paramètres. Il est important d'utiliser
 cette fonction avant de tester les autres fonctionnalité du programme car les
 fichiers de statuts seront utilisés dans les autres questions. Les fichiers
-générés sont nommés mt3\_1, mt3\_2, \dots
+générés sont nommés mt\_1, mt\_2, \dots
 
 \subsection{Calcul séquentiel}
 
@@ -286,7 +286,7 @@ outputFile=pi
 if [ $# -eq 1 ]; then outputFile=$1; fi; mkdir -p out
 # compute pi
 for i in {0..9}; do
-    ./build/tp5 "./build/mt3_$i" > "./out/$outputFile$i.out" &
+    ./build/tp5 "./build/mt_$i" > "./out/$outputFile$i.out" &
 done
 time wait; echo "done"
 \end{minted}

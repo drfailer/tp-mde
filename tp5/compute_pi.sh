@@ -17,7 +17,7 @@ checkSetup() {
         echo "[WARN]: building project."
         make
     fi
-    if [ ! -f ./mt3_0 ]; then
+    if [ ! -f ./mt_0 ]; then
         echo "[WARN]: running project to generate status files."
         ./tp5
     fi
@@ -36,8 +36,8 @@ mkdir -p out
 # compute pi
 echo "computing pi"
 for i in {0..9}; do
-    echo "./build/tp5 ./build/mt3_$i"
-    ./build/tp5 "./build/mt3_$i" > "./out/$outputFile$i.out" &
+    echo "./build/tp5 ./build/mt_$i"
+    ./build/tp5 "./build/mt_$i" > "./out/$outputFile$i.out" &
 done
 
 # wait and quit
