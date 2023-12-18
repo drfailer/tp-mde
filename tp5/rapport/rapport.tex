@@ -22,6 +22,10 @@
 %================image=================
 \usepackage{graphicx}
 
+%==========rename listings=============
+\renewcommand\listoflistingscaption{Table des extraits de codes}
+\renewcommand\listingscaption{Extrait de code}
+
 %------------------------------------------------------------------------------%
 %                                   document                                   %
 %------------------------------------------------------------------------------%
@@ -56,6 +60,7 @@
 
 \clearpage
 \tableofcontents
+\listoflistings
 \clearpage
 
 \section{Introduction}
@@ -93,7 +98,7 @@ du listing \ref{git-sm}.
   git submodule init
   git submodule update
 \end{minted}
-\caption{Clonage des sous-modules git.}
+\caption{Clonage des sous-modules git}
 \label{git-sm}
 \end{listing}
 
@@ -200,7 +205,7 @@ void question4(size_t nbReplications, size_t nbDraws,
               << "; time: " << timerCountMs() << std::endl;
 }
 \end{minted}
-\caption{Fonction question4.}
+\caption{Fonction question4}
 \label{fn-qf}
 \end{listing}
 
@@ -220,7 +225,7 @@ cela reste intéressant s'il on souhaite faire des mesures plus précises.
             .count() /                                                         \
         1000.0
 \end{minted}
-\caption{Macro timer.}
+\caption{Macro timer}
 \label{macro-timer}
 \end{listing}
 
@@ -263,34 +268,21 @@ l'exécution terminée, les résultats sont stockés dans les fichiers du réper
 
 set -euo pipefail
 
-checkSetup() {
-  # ...
-}
-
+checkSetup() { }
 checkSetup
 
 # configure output file
 outputFile=pi
-if [ $# -eq 1 ]; then
-    outputFile=$1
-fi
-mkdir -p out
-
+if [ $# -eq 1 ]; then outputFile=$1; fi; mkdir -p out
 # compute pi
-echo "computing pi"
 for i in {0..9}; do
-    echo "./build/tp5 ./build/mt3_$i"
     ./build/tp5 "./build/mt3_$i" > "./out/$outputFile$i.out" &
 done
-
-# wait and quit
-time wait
-echo "done"
+time wait; echo "done"
 \end{minted}
 \caption{Script compute\_pi.sh}
 \label{script}
 \end{listing}
-\clearpage
 
 À noter qu'à la fin du script on utilise la commande \texttt{wait} qui va
 permettre d'attendre que tous les processus lancés en tâche de fond se terminent
@@ -330,13 +322,14 @@ void question6aFuture(const std::string &fileName, size_t nbDraw) {
     std::cout << "total time: " << timerCountMs() / 1000.0 << "s" << std::endl;
 }
 \end{minted}
-\caption{Fonction question6aFuture.}
+\caption{Fonction question6aFuture}
 \label{fn-q6}
 \end{listing}
 
 Pour cette solution, le temps de calcul est similaire à celui du script ce qui
 est logique étant donné le fait que le même nombre de threads a été utilisé.
 
+\clearpage
 \section{Gattaca}
 
 Dans cette section, nous allons traiter un nouvel exemple de calcul parallèle.
@@ -369,7 +362,7 @@ statuts du générateur. Pour ce faire, il faut utiliser les options
   ./tp5 gattaca gen # génération des fichiers de statuts
   ./tp5 gattaca     # lancement de la simulation
 \end{minted}
-\caption{Lancement de la simulation GATTACA.}
+\caption{Lancement de la simulation GATTACA}
 \label{cmds-gattaca}
 \end{listing}
 

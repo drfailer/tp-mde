@@ -6,4 +6,5 @@ clean:
 	rm -rf rapport.aux
 	rm -rf rapport.log
 	rm -rf rapport.toc
+	rm -rf rapport.lol
 	rm -rf _minted-rapport/
