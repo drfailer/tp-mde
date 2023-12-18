@@ -69,17 +69,21 @@ L'objectif de ce TP est d'utiliser un générateur de nombres pseudo-aléatoires
 pour réaliser des calculs en parallèle. Pour générer les nombres nous
 utiliserons l'implémentation de Mersenne Twister fournie par la bibliothèque
 CLHEP. Nous commencerons par détailler l'installation de la bibliothèque, puis
-nous testerons la répétabilité de séquence de nombres générés aléatoirement
-ainsi que le bon fonctionnement de la sauvegarde de statuts du générateur dans
+nous testerons la répétabilité des séquences de nombres générées aléatoirement
+ainsi que le bon fonctionnement de la sauvegarde des statuts du générateur dans
 des fichiers. Ensuite, nous traiterons l'exemple simple du calcul du nombre
 $\pi$, d'abord en séquentiel, puis en parallèle. Enfin, nous traiterons un autre
 exemple consistant à générer des séquences de bases nucléiques.\\
 
 Pour pouvoir paralléliser les calculs nous commencerons par pré-générer des
 fichiers de statuts de Mersenne Twister. En effet, ce générateur produit
-toujours la même séquence de nombre (avec la seed fournie par Makoto Matsumoto).
-Pour pouvoir paralléliser les calculs, on doit pouvoir lancer le générateur à
-partir d'un certain état et pour ce faire on utilisera des fichiers de statuts.
+toujours la même séquence de nombres (avec la seed fournie par Makoto
+Matsumoto), or on ne souhaite pas repartir du même point dans chaque thread.
+Pour que les threads utilisent des séquences différentes, nous utiliserons les
+fichiers de statuts pour lancer le générateur à partir de point différents dans
+la séquence. Pour ce faire, il faudra séparer les statuts d'un certain nombre
+d'étapes (nombre à généré) lors de la génération. Nous discuterons des limites
+de cette méthode dans la conclusion.
 
 \clearpage
 
@@ -87,11 +91,11 @@ partir d'un certain état et pour ce faire on utilisera des fichiers de statuts.
 
 Dans cette première section nous allons voir comment installer la bibliothèque
 CLHEP. Pour simplifier la gestion des dépendances, ce projet utilise des
-sous-modules git.
+sous-modules git.\\
 
 Le clonage des sous-modules ne se fait pas automatiquement lors du clonage du
 projet. Pour avoir accès aux sous-modules, il faut utiliser les commandes
-du listing \ref{git-sm}.
+de l'extrait de code \ref{git-sm}.
 
 \begin{listing}[ht!]
 \begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{bash}
@@ -112,16 +116,22 @@ du répertoire \texttt{lib}. Ce script va permettre de compiler et d'installer
 la bibliothèque (fichiers d'entêtes, bibliothèque statiques, \dots) dans le
 répertoire \texttt{lib/CLHEP-lib}. Ensuite, on peut compiler le projet en
 utilisant CMake (utiliser un répertoire \texttt{build/} à la racine du
-projet).
+projet). Malheureusement, le CMake de la bibliothèque ne fournit pas de moyen
+simple de compiler uniquement la partie \textit{Random} qui est utilisée pour ce
+tp. La compilation peut donc être assez longue car le script compile tous les
+modules de la bibliothèque.
 
 À noter que pour compiler la bibliothèque CLHEP, le script \texttt{build.sh}
 utilise \texttt{make} avec l'option \texttt{-j} pour paralléliser le
 compilation. Cette option est pratique car elle permet de compiler les fichiers
-plus rapidement, cependant, elle peut être consommatrice en ressource. En effet,
-ici, on ne spécifie pas le nombre de threads donc \texttt{make} utilise
+plus rapidement, cependant, elle peut être consommatrice en ressources. En
+effet, ici, on ne spécifie pas le nombre de threads, \texttt{make} utilise
 toutes les ressources disponibles. Sur une machine peu puissante, il est
 recommandé de modifier le script soit en spécifiant une limite après l'option,
-soit la supprimant.
+soit la supprimant.\\
+
+Maintenant que nous avons traité l'installation de la bibliothèque, nous allons
+pourvoir commencer le tp.
 
 \section{Test du générateur}
 
@@ -131,17 +141,15 @@ statuts.\\
 
 La générations des fichier de statuts se fait avec la méthode
 \texttt{saveStatus} et le chargement des fichiers se fait avec
-\texttt{restoreStatus}. Dans la fonction \texttt{checkReproducibility},
-nous générons dans un premier temps des fichiers de statuts, et chaque statuts
-est séparé par un certain nombre de tirages de nombres pseudo-aléatoires. Les
-tirages sont sauvegardés dans un tableau.
-
-Dans un second temps, nous restaurons les statuts et nous vérifions que les
-tirages sont les mêmes que ceux sauvegardés précédemment. Ici, nous utilisons un
-\texttt{assert} pour tester l'égalité des nombres. Si les nouveaux nombres
-générés ne sont pas égaux à ceux sauvegardés, le programme s'arrête avec un code
-erreur. Si le programme se termine sans échouer, le test du générateur est
-valide.\\
+\texttt{restoreStatus}. Dans la fonction \texttt{checkReproducibility}, nous
+générons dans un premier temps des fichiers de statuts, et chaque statuts est
+séparé par un certain nombre de tirages de nombres pseudo-aléatoires. Les
+tirages sont sauvegardés dans un tableau. Dans un second temps, nous restaurons
+les statuts et nous vérifions que les tirages sont les mêmes que ceux
+sauvegardés précédemment. Ici, nous utilisons un \texttt{assert} pour tester
+l'égalité des nombres. Si les nouveaux nombres générés ne sont pas égaux à ceux
+sauvegardés, le programme s'arrête avec un code erreur. Si le programme se
+termine sans échouer, le test du générateur est valide.\\
 
 À noter que ce test basique ne permet pas de valider avec certitude le bon
 fonctionnement du générateur. Nous nous contenterons cependant de ce test étant
@@ -154,7 +162,7 @@ un petit nombre de tirages.
 Maintenant que nous avons vérifié le bon fonctionnement du générateur, nous
 allons réaliser un simple calcul de $\pi$ en utilisant la méthode de Monte
 Carlo. Le calcul sera fait de façon séquentielle dans un premier temps, puis de
-façon parallèle dans un second temps.
+façon parallèle dans un second.
 
 \subsection{Génération des fichiers de statuts}
 
@@ -177,7 +185,7 @@ Dans un premier temps, nous allons réaliser le calcul de $\pi$ de façon
 séquentielle. Cela va permettre de vérifier notre algorithme et simplifiera la
 parallélisation.\\
 
-Pour le calcul séquentiel, nous utilisons la fonction \texttt{question4} qui
+Pour le calcul séquentiel, nous utilisons la fonction \texttt{piSequential} qui
 réalise plusieurs calculs de $\pi$ et qui calcule la moyenne des résultats pour
 avoir un valeur approchée. Cette fonction prend en paramètre le nombre de
 réplications du calcul ainsi que le nombre de tirages pour chaque réplication.
@@ -185,11 +193,12 @@ Pour chaque réplication, on restaure un statut du générateur puis on utilise 
 fonction \texttt{computePi}. Ici, il n'est pas vraiment nécessaire de
 restaurer les statuts du générateur à chaque itération, cependant, cela permet
 de facilement tester le code qui sera parallélisé par la suite. Le code de la
-fonction est visible sur le listing \ref{fn-qf}.
+fonction est visible sur l'extrait de code \ref{fn-qf}.
+\clearpage
 
 \begin{listing}[ht!]
 \begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{CPP}
-void question4(size_t nbReplications, size_t nbDraws,
+void piSequential(size_t nbReplications, size_t nbDraws,
                const std::string &fileName) {
     CLHEP::MTwistEngine mt;
     double sumPI = 0;
@@ -205,16 +214,17 @@ void question4(size_t nbReplications, size_t nbDraws,
               << "; time: " << timerCountMs() << std::endl;
 }
 \end{minted}
-\caption{Fonction question4}
+\caption{Fonction piSequential}
 \label{fn-qf}
 \end{listing}
 
 La fonction permet aussi de mesurer le temps de calcul en utilisant les macros
-visibles sur le listing \ref{macro-timer}. Ces macros permettent d'avoir une
-approximation du nombre de mili-secondes écoulées durant un calcul. Ici, on
-choisit une précision à la micor-seconde ce qui est très élevé étant donné le
-fait que l'exécution des calculs peut prendre plusieurs secondes. Cependant,
-cela reste intéressant s'il on souhaite faire des mesures plus précises.
+visibles sur le l'extrait de code \ref{macro-timer}. Ces macros permettent
+d'avoir une approximation du nombre de mili-secondes écoulées durant un calcul.
+Ici, on choisit une précision à la micro-seconde ce qui est très élevé étant
+donné le fait que l'exécution des calculs peut prendre plusieurs secondes.
+Cependant, cela reste intéressant s'il on souhaite faire des mesures plus
+précises.
 
 \begin{listing}[ht!]
 \begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{CPP}
@@ -230,8 +240,8 @@ cela reste intéressant s'il on souhaite faire des mesures plus précises.
 \end{listing}
 
 Ici, le calcul prend plus d'une minute pour s'exécuter. Dans la partie suivante,
-nous allons comparer ce temps de calcul avec celui obtenu en parallélisant les
-calculs.
+nous allons comparer ce temps de calcul avec celui obtenu avec la
+parallélisation.
 
 \subsection{Calcul parallèle}
 
@@ -245,21 +255,21 @@ processus, puis nous utiliserons les threads de la bibliothèque standard de C++
 Ici, nous allons utiliser un script bash pour paralléliser les calculs.
 L'objectif est de faire en sorte de pouvoir passer en argument du programme le
 nom d'un fichier de statut à charger de sorte à pouvoir lancer plusieurs fois le
-même programme en tâche de fond avec un fichier différent.\\
+même programme en tâche de fond avec un fichier différent à chaque foi.\\
 
-La fonction \texttt{question5} est une version simplifiée de la fonction
-\texttt{question4} qui ne lance qu'une fois le calcul. La fonction prend
-aussi en argument le nom du fichier de statut à charger pour initialiser le
+La fonction \texttt{piFromStatusFile} est une version simplifiée de la fonction
+\texttt{piSequential} qui ne lance qu'une seule fois le calcul. La fonction
+prend en argument le nom du fichier de statut à charger pour initialiser le
 générateur.
 
-Le script utilisé pour lancer les processus est visible sur le listing
+Le script utilisé pour lancer les processus est visible sur l'extrait de code
 \ref{script}. Ici, on commence par vérifier que le projet est bien compilé et
 que les fichiers de statuts ont bien été générés (dans le cas contraire, on fait
-le nécessaire) avec la fonction \texttt{checkSetup}. Ensuite on définit le
-nom des fichiers de sortie du programme (le nom est configurable avec les
-argument du script), puis on lance 10 processus en tâche de fond (utilisation du
-\texttt{\&} en fin de ligne) avec une boucle \texttt{for}. Une fois
-l'exécution terminée, les résultats sont stockés dans les fichiers du répertoire
+le nécessaire) avec la fonction \texttt{checkSetup}. Ensuite on définit le nom
+des fichiers de sortie du programme (le nom est configurable avec les arguments
+du script), puis on lance 10 processus en tâche de fond (utilisation du
+\texttt{\&} en fin de ligne) avec une boucle \texttt{for}. Une fois l'exécution
+terminée, les résultats sont stockés dans les fichiers du répertoire
 \texttt{out/}.
 
 \begin{listing}[ht!]
@@ -299,14 +309,15 @@ standard C++.
 \subsubsection{Utilisation des threads}
 
 La seconde solution utilise les threads de la bibliothèque standard de C++. Ici,
-on utilise la fonction \texttt{question6a} disponible en deux versions, une
+on utilise la fonction \texttt{piParallel} disponible en deux versions, une
 utilisant directement les threads, et une autre utilisant l'abstraction
-\texttt{std::future}. Les deux version utilisent la fonction
-\texttt{question5} présentée dans la section \ref{sec:script}.
+\texttt{std::future}. La version utilisant \texttt{std::future} est visible sur
+l'extrait de code \ref{fn-g6}. Les deux version utilisent la fonction
+\texttt{piFromStatusFile} présentée dans la section \ref{sec:script}.
 
 \begin{listing}[ht!]
 \begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{CPP}
-void question6aFuture(const std::string &fileName, size_t nbDraw) {
+void piParallel(const std::string &fileName, size_t nbDraw) {
     CLHEP::MTwistEngine mt;
     size_t i;
 
@@ -314,7 +325,7 @@ void question6aFuture(const std::string &fileName, size_t nbDraw) {
     /* threads scope */ {
         std::future<void> pis[NB_REPLICATION];
         for (i = 0; i < NB_REPLICATION; ++i) {
-            pis[i] = std::async(std::launch::async, question5, cat(fileName, i),
+            pis[i] = std::async(std::launch::async, piFromStatusFile, cat(fileName, i),
                                 nbDraw);
         }
     }
@@ -322,7 +333,7 @@ void question6aFuture(const std::string &fileName, size_t nbDraw) {
     std::cout << "total time: " << timerCountMs() / 1000.0 << "s" << std::endl;
 }
 \end{minted}
-\caption{Fonction question6aFuture}
+\caption{Fonction piParallel}
 \label{fn-q6}
 \end{listing}
 
@@ -333,8 +344,8 @@ est logique étant donné le fait que le même nombre de threads a été utilis�
 \section{Gattaca}
 
 Dans cette section, nous allons traiter un nouvel exemple de calcul parallèle.
-Ici, on va simuler la génération de séquence de bases nucléiques. Ces bases sont
-symbolisées par des lettres avec quatre possibilités A, C, G et T. Dans un
+Ici, on va simuler la génération de séquences de bases nucléiques. Ces bases
+sont symbolisées par des lettres avec quatre possibilités A, C, G et T. Dans un
 premier temps, on va chercher à générer une séquence simple, "GATTACA". Ensuite,
 on discutera de la génération de séquences plus complexes.\\
 
@@ -350,14 +361,14 @@ faite pour être parallélisée.
 
 Enfin, la fonction \texttt{gattaca}, va lacer la fonction
 \texttt{generateNSequences} dans un certains nombre de threads et elle va
-collecter les résultats. À la fin, la fonction affiche le nombre de tirage moyen
-nécessaire pour trouver la séquence recherchée.\\
+collecter les résultats. À la fin, la fonction affiche le nombre de tirages
+moyen nécessaires pour trouver la séquence recherchée.\\
 
 À noter qu'avant de lancer la simulation, il faut générer les fichiers de
 statuts du générateur. Pour ce faire, il faut utiliser les options
-\texttt{gattaca} et \texttt{gen} comme sur le listing \ref{cmds-gattaca}.
+\texttt{gattaca} et \texttt{gen} comme sur l'extrait de code \ref{cmds-gattaca}.
 
-\begin{listing}[ht!]
+\begin{listing}
 \begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{bash}
   ./tp5 gattaca gen # génération des fichiers de statuts
   ./tp5 gattaca     # lancement de la simulation
@@ -379,7 +390,7 @@ exemple, pour chercher une séquence de 18 bases comme
 \texttt{AAATTTGCGTTCGATTAG}, il y a en tout $4^{18} = 68,719,476,736$
 possibilités. Ici, la plus grosse limitation vient de la génération des fichiers
 de statuts. En effet, la génération des fichiers se fait de manière
-séquentielle. Ici, si l'on souhaité paralléliser la recherche sur $N$ threads,
+séquentielle. Ici, si l'on souhaitait paralléliser la recherche sur $N$ threads,
 il faudrait générer $N$ fichiers de statuts avec environ 70 milliards de tirage,
 ce qui prendrait énormément de temps. Le problème de la génération de phrases
 est encore plus complexe car ici, il y a encore plus de possibilités.
@@ -392,11 +403,14 @@ facilement parallélisables. Cependant, avec des générateurs tels que Mersenne
 Twister, on reste limité par le fait que l'on ne peut pas facilement lancer le
 générateur à partir d'un certain point. La méthode employée ici consistait en la
 génération de fichiers de statuts, cependant pour créer ces derniers il faut
-tout de même faire des tirages avec le générateur. Cela peut prendre beaucoup de
-temps et la génération doit obligatoirement se faire de façon séquentielle.
+tout de même faire des tirages de façon séquentielle avec le générateur ce qui
+peut prendre un temps conséquent.\\
 
-Ce problème pousse les créateur de générateur à trouver de nouvelles méthodes.
+Ce problème pousse les créateur de générateurs à trouver de nouvelles méthodes.
 Par exemple, Makoto Matsumoto a créé un \textit{"générateur de générateur"} qui
-cré différents Mercenne Twister, et ce, de manière efficace.
+crée différents Mercenne Twister, et ce, de manière efficace. Malheureusement,
+la fiabilité de ce générateur n'a pas encore été prouvée. Avec ce type de
+générateurs, plus besoin de générer des fichiers de statuts, on peut directement
+paralléliser les calculs.
 
 \end{document}
