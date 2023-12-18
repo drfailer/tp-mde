@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
         break;
     case PI_PAR:
         std::cout << "pi calculus with threads:" << std::endl;
-        // on peut essayer les deux version mais elle font la même chose
+        // on peut essayer les deux version mais elles font la même chose
         /* piParallelThreads(); */
         piParallel();
         break;
