@@ -22,9 +22,6 @@
 %================image=================
 \usepackage{graphicx}
 
-%================colors================
-\definecolor{LightGray}{gray}{0.9}
-
 %------------------------------------------------------------------------------%
 %                                   document                                   %
 %------------------------------------------------------------------------------%
@@ -92,7 +89,7 @@ projet. Pour avoir accès aux sous-modules, il faut utiliser les commandes
 du listing \ref{git-sm}.
 
 \begin{listing}[ht!]
-\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,bgcolor=LightGray,fontsize=\normalsize,linenos]{bash}
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{bash}
   git submodule init
   git submodule update
 \end{minted}
@@ -105,18 +102,18 @@ dépôts en stockant plusieurs fois le même code. De plus, ils permettent de
 facilement cloner les dépendances (cela est plus simple que de télécharger la
 bibliothèque manuellement).\\
 
-Pour compiler la bibliothèque, il faut utiliser le script \lstinline{build.sh}
-du répertoire \lstinline{lib}. Ce script va permettre de compiler et d'installer
+Pour compiler la bibliothèque, il faut utiliser le script \texttt{build.sh}
+du répertoire \texttt{lib}. Ce script va permettre de compiler et d'installer
 la bibliothèque (fichiers d'entêtes, bibliothèque statiques, \dots) dans le
-répertoire \lstinline{lib/CLHEP-lib}. Ensuite, on peut compiler le projet en
-utilisant CMake (utiliser un répertoire \lstinline{build/} à la racine du
+répertoire \texttt{lib/CLHEP-lib}. Ensuite, on peut compiler le projet en
+utilisant CMake (utiliser un répertoire \texttt{build/} à la racine du
 projet).
 
-À noter que pour compiler la bibliothèque CLHEP, le script \lstinline{build.sh}
-utilise \lstinline{make} avec l'option \lstinline{-j} pour paralléliser le
+À noter que pour compiler la bibliothèque CLHEP, le script \texttt{build.sh}
+utilise \texttt{make} avec l'option \texttt{-j} pour paralléliser le
 compilation. Cette option est pratique car elle permet de compiler les fichiers
 plus rapidement, cependant, elle peut être consommatrice en ressource. En effet,
-ici, on ne spécifie pas le nombre de threads donc \lstinline{make} utilise
+ici, on ne spécifie pas le nombre de threads donc \texttt{make} utilise
 toutes les ressources disponibles. Sur une machine peu puissante, il est
 recommandé de modifier le script soit en spécifiant une limite après l'option,
 soit la supprimant.
@@ -128,15 +125,15 @@ toujours les mêmes séquences de nombres lorsqu'il charge les fichiers de
 statuts.\\
 
 La générations des fichier de statuts se fait avec la méthode
-\lstinline{saveStatus} et le chargement des fichiers se fait avec
-\lstinline{restoreStatus}. Dans la fonction \lstinline{checkReproducibility},
+\texttt{saveStatus} et le chargement des fichiers se fait avec
+\texttt{restoreStatus}. Dans la fonction \texttt{checkReproducibility},
 nous générons dans un premier temps des fichiers de statuts, et chaque statuts
 est séparé par un certain nombre de tirages de nombres pseudo-aléatoires. Les
 tirages sont sauvegardés dans un tableau.
 
 Dans un second temps, nous restaurons les statuts et nous vérifions que les
 tirages sont les mêmes que ceux sauvegardés précédemment. Ici, nous utilisons un
-\lstinline{assert} pour tester l'égalité des nombres. Si les nouveaux nombres
+\texttt{assert} pour tester l'égalité des nombres. Si les nouveaux nombres
 générés ne sont pas égaux à ceux sauvegardés, le programme s'arrête avec un code
 erreur. Si le programme se termine sans échouer, le test du générateur est
 valide.\\
@@ -162,7 +159,7 @@ Sans cette étape, les calculs lancés en parallèles utiliseront la même séqu
 de nombre pseudo-aléatoires, ce qui rendrait la parallélisation inutile.\\
 
 La génération des fichiers de statuts se fait à l'aide de la fonction
-\lstinline{generateStatusFiles}. On peut configurer le nombre de fichiers à
+\texttt{generateStatusFiles}. On peut configurer le nombre de fichiers à
 générer ainsi que le nombre de tirages séparant chaque statuts. Pour la suite,
 on utilisera les valeurs par défauts des paramètres. Il est important d'utiliser
 cette fonction avant de tester les autres fonctionnalité du programme car les
@@ -175,18 +172,18 @@ Dans un premier temps, nous allons réaliser le calcul de $\pi$ de façon
 séquentielle. Cela va permettre de vérifier notre algorithme et simplifiera la
 parallélisation.\\
 
-Pour le calcul séquentiel, nous utilisons la fonction \lstinline{question4} qui
+Pour le calcul séquentiel, nous utilisons la fonction \texttt{question4} qui
 réalise plusieurs calculs de $\pi$ et qui calcule la moyenne des résultats pour
 avoir un valeur approchée. Cette fonction prend en paramètre le nombre de
 réplications du calcul ainsi que le nombre de tirages pour chaque réplication.
 Pour chaque réplication, on restaure un statut du générateur puis on utilise la
-fonction \lstinline{computePi}. Ici, il n'est pas vraiment nécessaire de
+fonction \texttt{computePi}. Ici, il n'est pas vraiment nécessaire de
 restaurer les statuts du générateur à chaque itération, cependant, cela permet
 de facilement tester le code qui sera parallélisé par la suite. Le code de la
 fonction est visible sur le listing \ref{fn-qf}.
 
 \begin{listing}[ht!]
-\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,bgcolor=LightGray,fontsize=\normalsize,linenos]{CPP}
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{CPP}
 void question4(size_t nbReplications, size_t nbDraws,
                const std::string &fileName) {
     CLHEP::MTwistEngine mt;
@@ -215,7 +212,7 @@ fait que l'exécution des calculs peut prendre plusieurs secondes. Cependant,
 cela reste intéressant s'il on souhaite faire des mesures plus précises.
 
 \begin{listing}[ht!]
-\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,bgcolor=LightGray,fontsize=\normalsize,linenos]{CPP}
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{CPP}
 #define timerStart() auto _start = std::chrono::high_resolution_clock::now();
 #define timerEnd() auto _end = std::chrono::high_resolution_clock::now();
 #define timerCountMs()                                                         \
@@ -245,23 +242,23 @@ L'objectif est de faire en sorte de pouvoir passer en argument du programme le
 nom d'un fichier de statut à charger de sorte à pouvoir lancer plusieurs fois le
 même programme en tâche de fond avec un fichier différent.\\
 
-La fonction \lstinline{question5} est une version simplifiée de la fonction
-\lstinline{question4} qui ne lance qu'une fois le calcul. La fonction prend
+La fonction \texttt{question5} est une version simplifiée de la fonction
+\texttt{question4} qui ne lance qu'une fois le calcul. La fonction prend
 aussi en argument le nom du fichier de statut à charger pour initialiser le
 générateur.
 
 Le script utilisé pour lancer les processus est visible sur le listing
 \ref{script}. Ici, on commence par vérifier que le projet est bien compilé et
 que les fichiers de statuts ont bien été générés (dans le cas contraire, on fait
-le nécessaire) avec la fonction \lstinline{checkSetup}. Ensuite on définit le
+le nécessaire) avec la fonction \texttt{checkSetup}. Ensuite on définit le
 nom des fichiers de sortie du programme (le nom est configurable avec les
 argument du script), puis on lance 10 processus en tâche de fond (utilisation du
-\lstinline{\&} en fin de ligne) avec une boucle \lstinline{for}. Une fois
+\texttt{\&} en fin de ligne) avec une boucle \texttt{for}. Une fois
 l'exécution terminée, les résultats sont stockés dans les fichiers du répertoire
-\lstinline{out/}.
+\texttt{out/}.
 
 \begin{listing}[ht!]
-\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,bgcolor=LightGray,fontsize=\normalsize,linenos]{bash}
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{bash}
 #!/usr/bin/env bash
 
 set -euo pipefail
@@ -295,9 +292,9 @@ echo "done"
 \end{listing}
 \clearpage
 
-À noter qu'à la fin du script on utilise la commande \lstinline{wait} qui va
+À noter qu'à la fin du script on utilise la commande \texttt{wait} qui va
 permettre d'attendre que tous les processus lancés en tâche de fond se terminent
-pour quitter le programme. On emploie aussi la commande \lstinline{time} pour
+pour quitter le programme. On emploie aussi la commande \texttt{time} pour
 mesurer le temps de calcul total (on considère que le temps de lancement des
 processus est négligeable, on ne le prend donc pas en compte ici). Le calcul
 prend environ dix secondes ce qui est bien plus rapide que le temps de calcul
@@ -310,13 +307,13 @@ standard C++.
 \subsubsection{Utilisation des threads}
 
 La seconde solution utilise les threads de la bibliothèque standard de C++. Ici,
-on utilise la fonction \lstinline{question6a} disponible en deux versions, une
+on utilise la fonction \texttt{question6a} disponible en deux versions, une
 utilisant directement les threads, et une autre utilisant l'abstraction
-\lstinline{std::future}. Les deux version utilisent la fonction
-\lstinline{question5} présentée dans la section \ref{sec:script}.
+\texttt{std::future}. Les deux version utilisent la fonction
+\texttt{question5} présentée dans la section \ref{sec:script}.
 
 \begin{listing}[ht!]
-\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,bgcolor=LightGray,fontsize=\normalsize,linenos]{CPP}
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{CPP}
 void question6aFuture(const std::string &fileName, size_t nbDraw) {
     CLHEP::MTwistEngine mt;
     size_t i;
@@ -349,26 +346,26 @@ premier temps, on va chercher à générer une séquence simple, "GATTACA". Ensu
 on discutera de la génération de séquences plus complexes.\\
 
 Pour générer une séquence avec un certain nombre de bases, on utilise la
-fonction \lstinline{generateSequence}. Cette fonction var permettre de générer
+fonction \texttt{generateSequence}. Cette fonction var permettre de générer
 une séquence, sous forme de chaine de caractères, avec une taille configurable.
 
-Ensuite, on utilise la fonction \lstinline{generateNSequences} qui va permettre
+Ensuite, on utilise la fonction \texttt{generateNSequences} qui va permettre
 de générer un certain nombre de séquences. Cette fonction prend en paramètre une
 séquence à chercher. La fonction s'arrête lorsque cette séquence est trouvée (ou
 lorsque le compteur atteint le nombre maximum d'itérations). Cette fonction est
 faite pour être parallélisée.
 
-Enfin, la fonction \lstinline{gattaca}, va lacer la fonction
-\lstinline{generateNSequences} dans un certains nombre de threads et elle va
+Enfin, la fonction \texttt{gattaca}, va lacer la fonction
+\texttt{generateNSequences} dans un certains nombre de threads et elle va
 collecter les résultats. À la fin, la fonction affiche le nombre de tirage moyen
 nécessaire pour trouver la séquence recherchée.\\
 
 À noter qu'avant de lancer la simulation, il faut générer les fichiers de
 statuts du générateur. Pour ce faire, il faut utiliser les options
-\lstinline{gattaca} et \lstinline{gen} comme sur le listing \ref{cmds-gattaca}.
+\texttt{gattaca} et \texttt{gen} comme sur le listing \ref{cmds-gattaca}.
 
 \begin{listing}[ht!]
-\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,bgcolor=LightGray,fontsize=\normalsize,linenos]{bash}
+\begin{minted}[frame=lines,framesep=2mm,baselinestretch=1.2,fontsize=\normalsize,linenos]{bash}
   ./tp5 gattaca gen # génération des fichiers de statuts
   ./tp5 gattaca     # lancement de la simulation
 \end{minted}
@@ -386,7 +383,7 @@ d'environ $11,789$.\\
 La séquence GATTACA très courte et nombre de possibilités est assez faible. La
 génération d'une séquence plus grande peut prendre beaucoup de temps. Par
 exemple, pour chercher une séquence de 18 bases comme
-\lstinline{AAATTTGCGTTCGATTAG}, il y a en tout $4^{18} = 68,719,476,736$
+\texttt{AAATTTGCGTTCGATTAG}, il y a en tout $4^{18} = 68,719,476,736$
 possibilités. Ici, la plus grosse limitation vient de la génération des fichiers
 de statuts. En effet, la génération des fichiers se fait de manière
 séquentielle. Ici, si l'on souhaité paralléliser la recherche sur $N$ threads,
