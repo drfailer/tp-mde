@@ -25,7 +25,7 @@ void checkReproducibility() {
 
     // sauvegarde de statut et de tirages
     for (size_t i = 0; i < NB_STATUS_FILE; ++i) {
-        mt.saveStatus(cat("mt2_", i).c_str());
+        mt.saveStatus(cat("mt_check_", i).c_str());
         for (size_t j = 0; j < SEPARATION_NB; ++j) {
             savedRandoms[i][j] = mt.flat();
         }
@@ -33,7 +33,7 @@ void checkReproducibility() {
 
     // test si on retrouve bien les tirages
     for (size_t i = 0; i < NB_STATUS_FILE; ++i) {
-        mt.restoreStatus(cat("mt2_", i).c_str());
+        mt.restoreStatus(cat("mt_check_", i).c_str());
         for (size_t j = 0; j < SEPARATION_NB; ++j) {
             // le assert fait planter le programme si le générateur ne génère
             // pas une séquence reproductible

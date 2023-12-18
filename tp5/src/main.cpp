@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
         break;
     case PI_SEC:
         std::cout << "compute pi (sequencial):" << std::endl;
-        question4();
+        piSequential();
         break;
     case PI_PAR:
         std::cout << "pi calculus with threads:" << std::endl;
@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
         gattaca(GATTACA_THREADS, GATTACA_NUMBERS, "gattaca/gattaca_", GATTACA_SEQUENCE);
         break;
     case PI_INPUT_FILE:
-        question5(argv[1]);
+        piFromStatusFile(argv[1]);
         break;
     }
     return 0;

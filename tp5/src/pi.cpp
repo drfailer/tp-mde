@@ -33,7 +33,7 @@ double computePi(CLHEP::HepRandomEngine &generator, int nbDraw) {
  * Réplication du calcule de pi selon la méthode de Monte-Carlo. On calcule et
  * on affiche la moyenne des valeurs trouvées ainsi que le temps de calcule.
  */
-void question4(size_t nbReplications, size_t nbDraws,
+void piSequential(size_t nbReplications, size_t nbDraws,
                const std::string &fileName) {
     CLHEP::MTwistEngine mt;
     double sumPI = 0;
@@ -58,7 +58,7 @@ void question4(size_t nbReplications, size_t nbDraws,
  * partir d'un fichier de statut pré-généré. Cette fonction peut-être utilisé
  * dans le script permettant le lancement de plusieurs programmes en parallèle.
  */
-void question5(const std::string &fileName, size_t nb_draws) {
+void piFromStatusFile(const std::string &fileName, size_t nb_draws) {
     CLHEP::MTwistEngine mt;
     double pi = 0;
 
@@ -91,7 +91,7 @@ void question6aFuture(const std::string &fileName, size_t nbDraws) {
     /* threads scope */ {
         std::future<void> pis[NB_REPLICATION];
         for (i = 0; i < NB_REPLICATION; ++i) {
-            pis[i] = std::async(std::launch::async, question5, cat(fileName, i),
+            pis[i] = std::async(std::launch::async, piFromStatusFile, cat(fileName, i),
                                 nbDraws);
         }
     }
@@ -112,7 +112,7 @@ void question6aThreads(const std::string &fileName, size_t nbDraws) {
 
     timerStart();
     for (i = 0; i < NB_REPLICATION; ++i) {
-        thread[i] = std::thread(question5, cat(fileName, i), nbDraws);
+        thread[i] = std::thread(piFromStatusFile, cat(fileName, i), nbDraws);
     }
 
     for (i = 0; i < NB_REPLICATION; ++i) {

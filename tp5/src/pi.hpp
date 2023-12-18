@@ -3,13 +3,13 @@
 #include <stddef.h>
 #include <string>
 
-void question4(size_t nbReplications = 10, size_t nbDraws = 1'000'000'000,
-               const std::string &fileName = "mt3_");
-void question5(const std::string &fileName = "mt3_",
+void piSequential(size_t nbReplications = 10, size_t nbDraws = 1'000'000'000,
+               const std::string &fileName = "mt_");
+void piFromStatusFile(const std::string &fileName = "mt_",
                size_t nb_draws = 1'000'000'000);
-void question6aFuture(const std::string &fileName = "mt3_",
+void piParallel(const std::string &fileName = "mt_",
                       size_t nb_draws = 1'000'000'000);
-void question6aThreads(const std::string &fileName = "mt3_",
+void piParallelThreads(const std::string &fileName = "mt_",
                        size_t nb_draws = 1'000'000'000);
 
 #endif

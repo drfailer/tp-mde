@@ -39,7 +39,7 @@ inline void createFileDirectory(std::string pathToFile) {
     auto pathEnd = std::find(pathToFile.rbegin(), pathToFile.rend(), '/');
 
     // create directory if needed
-    if (pathEnd != pathToFile.rbegin()) {
+    if (pathEnd != pathToFile.rend()) {
         std::string path = pathToFile.substr(0, std::distance(pathEnd, pathToFile.rend()));
 
         if (!std::filesystem::exists(path)) {
