@@ -40,4 +40,5 @@ make
 
 ### Script `compute_pi.sh`
 
-Le script permet le calcul de $\pi$ en parallèle sans utiliser les threads.
+Le script permet le calcul de $\pi$ en parallèle sans utiliser les threads de la
+biliothèque sandard.
