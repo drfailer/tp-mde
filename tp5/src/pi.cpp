@@ -83,7 +83,7 @@ constexpr size_t NB_REPLICATION = 10;
 /**
  * Paraléllisation du calcule éffectué par question5 en utilisant std::future.
  */
-void question6aFuture(const std::string &fileName, size_t nbDraws) {
+void piParallel(const std::string &fileName, size_t nbDraws) {
     CLHEP::MTwistEngine mt;
     size_t i;
 
@@ -102,7 +102,7 @@ void question6aFuture(const std::string &fileName, size_t nbDraws) {
 /**
  * Paraléllisation du calcule éffectué par question5 en utilisant std::thread.
  */
-void question6aThreads(const std::string &fileName, size_t nbDraws) {
+void piParallelThreads(const std::string &fileName, size_t nbDraws) {
     /* config **************************************/
     constexpr size_t NB_REPLICATION = 10;
     /***********************************************/

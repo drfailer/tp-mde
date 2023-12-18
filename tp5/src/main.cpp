@@ -79,8 +79,8 @@ int main(int argc, char **argv) {
     case PI_PAR:
         std::cout << "pi calculus with threads:" << std::endl;
         // on peut essayer les deux version mais elle font la même chose
-        /* question6aThreads(); */
-        question6aFuture();
+        /* piParallelThreads(); */
+        piParallel();
         break;
     case GATTACA_GEN:
         std::cout << "gattaca status generation:" << std::endl;
